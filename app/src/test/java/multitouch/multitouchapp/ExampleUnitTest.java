@@ -1,4 +1,4 @@
-package multitouch.multitouchapp;
+package multitouch.test;
 
 import org.junit.Test;
 
