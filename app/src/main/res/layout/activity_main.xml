@@ -8,10 +8,26 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="multitouch.test.multitouch.multitouchapp.MainActivity">
+    tools:context="multitouch.multitouchapp.MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!" />
+
+    <FrameLayout
+        android:layout_width="fill_parent"
+        android:layout_height="19dp"
+        android:paddingLeft="75dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Gesture discoverabilty area" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="75dp"
+        android:layout_height="fill_parent"
+        android:paddingTop="25dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Toolbox area" />
+    </FrameLayout>
 </RelativeLayout>
