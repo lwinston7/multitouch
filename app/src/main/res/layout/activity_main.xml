@@ -9,22 +9,39 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="multitouch.multitouchapp.MainActivity">
-
-
-    <FrameLayout
+    <LinearLayout
         android:layout_width="fill_parent"
-        android:layout_height="19dp"
-        android:paddingLeft="75dp">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Gesture discoverabilty area" />
-    </FrameLayout>
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent">
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Open"
+                android:onClick="Open"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Save"
+                android:onClick="Save"/>
+        </LinearLayout>
+        <FrameLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:paddingLeft="50dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Gesture discoverabilty area" />
+        </FrameLayout>
+    </LinearLayout>
 
     <FrameLayout
         android:layout_width="75dp"
         android:layout_height="fill_parent"
-        android:paddingTop="25dp">
+        android:paddingTop="50dp">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
