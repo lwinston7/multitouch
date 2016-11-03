@@ -15,23 +15,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content">
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="Open"
-                android:text="Open" />
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="Save"
-                android:text="Save" />
-        </LinearLayout>
-
+        <!-- Gesture Discoverability area -->
         <FrameLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
@@ -57,6 +41,12 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
+
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:onClick="Open"
+                        android:text="Open" />
 
                     <ImageButton
                         android:id="@+id/buttonNew"
