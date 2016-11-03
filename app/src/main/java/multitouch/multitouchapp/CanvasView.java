@@ -67,7 +67,6 @@ public class CanvasView extends View {
         super.onSizeChanged(w, h, oldw, oldh);
         canvasBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         drawCanvas = new Canvas(canvasBitmap);
-
     }
 
     @Override
@@ -104,7 +103,10 @@ public class CanvasView extends View {
     }
 
     public void clearCanvas() {
-        drawPath.reset();
+        if (drawPath != null) {
+            drawPath.reset();
+        }
+        drawCanvas.drawColor(Color.WHITE);
         invalidate();
     }
 
@@ -154,6 +156,7 @@ public class CanvasView extends View {
         float pixelAmount = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 newSize, getResources().getDisplayMetrics());
         brushSize=pixelAmount;
+        System.out.println("brush size: " + brushSize + " =? " + newSize);
         drawPaint.setStrokeWidth(brushSize);
     }
 
