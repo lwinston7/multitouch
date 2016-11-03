@@ -8,8 +8,6 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
-import multitouch.test.R;
-
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
     private CanvasView customCanvas;

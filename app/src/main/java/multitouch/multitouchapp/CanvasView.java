@@ -10,13 +10,10 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.support.v4.view.MotionEventCompat;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.util.TypedValue;
@@ -51,8 +48,7 @@ public class CanvasView extends View{
     }
 
     public void setupDrawing(){
-       // brushSize = getResources().getInteger(R.integer.medium_size);
-        brushSize = 20;
+        brushSize = context.getResources().getInteger(R.integer.medium_size);
         lastBrushSize = brushSize;
         drawPath = new Path();
         // and we set a new Paint with the desired attributes

@@ -74,9 +74,6 @@
                         android:id="@+id/buttonErase"
                         android:layout_width="50dp"
                         android:layout_height="50dp"
-                        android:layout_alignBottom="@+id/buttonDraw"
-                        android:layout_toEndOf="@+id/buttonDraw"
-                        android:layout_toRightOf="@+id/buttonDraw"
                         android:contentDescription="@string/erase"
                         android:src="@drawable/eraser" />
 
@@ -84,9 +81,6 @@
                         android:id="@+id/buttonDraw"
                         android:layout_width="50dp"
                         android:layout_height="50dp"
-                        android:layout_alignParentLeft="true"
-                        android:layout_alignParentStart="true"
-                        android:layout_below="@+id/buttonNew"
                         android:contentDescription="@string/brush"
                         android:src="@drawable/brush" />
 
@@ -97,7 +91,7 @@
                         android:layout_gravity="bottom|center"
                         android:layout_weight="1"
                         android:onClick="clearCanvas"
-                        android:text="Clear" />
+                        android:text="@string/clear" />
 
                 </LinearLayout>
 
