@@ -10,6 +10,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.support.v4.view.MotionEventCompat;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -19,12 +20,15 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.util.TypedValue;
 
+import java.util.ArrayList;
+
 public class CanvasView extends View {
 
     public int width;
     public int height;
     private Bitmap canvasBitmap;
     private Canvas drawCanvas;
+    private ArrayList<Path> paths = new ArrayList<Path>();
     private Path drawPath;
     private Paint canvasPaint;
     private Paint drawPaint;
@@ -41,7 +45,6 @@ public class CanvasView extends View {
         super(c, attrs);
         context = c;
         setupDrawing();
-
     }
 
     public void setupDrawing(){
@@ -58,7 +61,6 @@ public class CanvasView extends View {
         drawPaint.setStrokeWidth(4f);
         drawPaint.setStrokeCap(Paint.Cap.ROUND);
         canvasPaint = new Paint(Paint.DITHER_FLAG);
-
     }
     @Override
     public void onSizeChanged(int w,int h, int oldw, int oldh) {
@@ -71,11 +73,21 @@ public class CanvasView extends View {
     @Override
     public void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        canvas.drawPath(drawPath, drawPaint);
+        /*
+        for (int i = 0; i < paths.size(); i++) {
+            canvas.drawPath(paths.get(i), drawPaint);
+        }
+        */
+
         canvas.drawBitmap(canvasBitmap, 0, 0, canvasPaint);
+
+        if (drawPath != null) {
+            canvas.drawPath(drawPath, drawPaint);
+        }
     }
 
     private void startTouch(float x, float y) {
+        drawPath = new Path();
         drawPath.moveTo(x,y);
         mX = x;
         mY = y;
@@ -96,9 +108,12 @@ public class CanvasView extends View {
         invalidate();
     }
 
-    private void upTouch() {
+    private void upTouch(float x, float y) {
+        moveTouch(x, y);
         //drawPath.lineTo(mX, mY);
         drawCanvas.drawPath(drawPath,drawPaint);
+        paths.add(drawPath);
+        drawPath = null;
     }
 
     @Override
@@ -116,7 +131,11 @@ public class CanvasView extends View {
                 invalidate();
                 break;
             case MotionEvent.ACTION_UP:
-                upTouch();
+                upTouch(x, y);
+                invalidate();
+                break;
+            case MotionEvent.ACTION_OUTSIDE:
+                upTouch(x, y);
                 invalidate();
                 break;
         }
@@ -125,9 +144,9 @@ public class CanvasView extends View {
     }
 
     public void setColor(String newColor) {
-        invalidate();
         paintColor = Color.parseColor(newColor);
         drawPaint.setColor(paintColor);
+        invalidate();
     }
 
     public void setBrushSize(float newSize){
@@ -153,9 +172,4 @@ public class CanvasView extends View {
 
 
     }
-
-
-
-
-
 }
