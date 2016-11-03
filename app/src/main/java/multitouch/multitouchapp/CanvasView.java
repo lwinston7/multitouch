@@ -35,6 +35,7 @@ public class CanvasView extends View{
     private int paintColor = 0xFF660000;
     private float mX, mY;
     private float brushSize, lastBrushSize;
+    private int bgColor = Color.WHITE;
 
     private static final float TOLERANCE = 5;
     private GestureDetector mGestureDetector;
@@ -50,7 +51,6 @@ public class CanvasView extends View{
     public void setupDrawing(){
         brushSize = context.getResources().getInteger(R.integer.medium_size);
         lastBrushSize = brushSize;
-        drawPath = new Path();
         // and we set a new Paint with the desired attributes
         drawPaint = new Paint();
         drawPaint.setAntiAlias(true);
@@ -79,7 +79,7 @@ public class CanvasView extends View{
 
         canvas.drawBitmap(canvasBitmap, 0, 0, canvasPaint);
 
-        if (drawPath != null) {
+        if (drawPath != null && !erase) {
             canvas.drawPath(drawPath, drawPaint);
         }
     }
@@ -95,9 +95,13 @@ public class CanvasView extends View{
         float dx = Math.abs(x - mX);
         float dy = Math.abs(y - mY);
         if (dx >= TOLERANCE || dy >= TOLERANCE) {
-            drawPath.quadTo(mX, mY, (x + mX)/2, (y + mY)/2);
+            drawPath.quadTo(mX, mY, (x + mX) / 2, (y + mY) / 2);
             mX = x;
             mY = y;
+        }
+        if (erase) {
+            // TODO: Does drawPath need to be cleared every time?
+            drawCanvas.drawPath(drawPath, drawPaint);
         }
     }
 
@@ -161,7 +165,6 @@ public class CanvasView extends View{
         float pixelAmount = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 newSize, getResources().getDisplayMetrics());
         brushSize=pixelAmount;
-        System.out.println("brush size: " + brushSize + " =? " + newSize);
         drawPaint.setStrokeWidth(brushSize);
     }
 
@@ -175,8 +178,13 @@ public class CanvasView extends View{
     public void setErase(boolean isErase){
     //set erase true or false
         erase=isErase;
-        if(erase) drawPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
-        else drawPaint.setXfermode(null);
+        if(erase) {
+            drawPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+            drawPaint.setColor(bgColor);
+        } else {
+            drawPaint.setXfermode(null);
+            drawPaint.setColor(paintColor);
+        }
     }
 
     private class DrawingGestureListener implements GestureDetector.OnGestureListener {
