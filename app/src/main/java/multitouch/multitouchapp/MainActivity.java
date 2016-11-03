@@ -61,6 +61,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
+    public void New(View view) {
+
+    }
+
     @Override
     public void onClick(View view) {
         if (view.getId() == R.id.buttonDraw) {

@@ -67,6 +67,7 @@
                         android:layout_alignRight="@+id/buttonDraw"
                         android:layout_marginTop="11dp"
                         android:contentDescription="@string/start_new"
+                        android:onClick="New"
                         android:src="@drawable/new_pic" />
 
                     <ImageButton
