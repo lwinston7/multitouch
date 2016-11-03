@@ -12,6 +12,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.support.v4.view.MotionEventCompat;
 import android.util.AttributeSet;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageButton;
@@ -22,7 +23,7 @@ import android.util.TypedValue;
 
 import java.util.ArrayList;
 
-public class CanvasView extends View {
+public class CanvasView extends View{
 
     public int width;
     public int height;
@@ -39,12 +40,14 @@ public class CanvasView extends View {
     private float brushSize, lastBrushSize;
 
     private static final float TOLERANCE = 5;
+    private GestureDetector mGestureDetector;
 
 
     public CanvasView(Context c, AttributeSet attrs) {
         super(c, attrs);
         context = c;
         setupDrawing();
+        mGestureDetector = new GestureDetector(context, new DrawingGestureListener());
     }
 
     public void setupDrawing(){
@@ -120,29 +123,35 @@ public class CanvasView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        float x = event.getX();
-        float y = event.getY();
+        if (this.mGestureDetector.onTouchEvent(event)) {
+            // We've detected one of our gestures!
 
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                startTouch(x, y);
-                invalidate();
-                break;
-            case MotionEvent.ACTION_MOVE:
-                moveTouch(x, y);
-                invalidate();
-                break;
-            case MotionEvent.ACTION_UP:
-                upTouch(x, y);
-                invalidate();
-                break;
-            case MotionEvent.ACTION_OUTSIDE:
-                upTouch(x, y);
-                invalidate();
-                break;
+        } else {
+            //Draw normally
+            float x = event.getX();
+            float y = event.getY();
+
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    startTouch(x, y);
+                    invalidate();
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    moveTouch(x, y);
+                    invalidate();
+                    break;
+                case MotionEvent.ACTION_UP:
+                    upTouch(x, y);
+                    invalidate();
+                    break;
+                case MotionEvent.ACTION_OUTSIDE:
+                    upTouch(x, y);
+                    invalidate();
+                    break;
+            }
         }
-        return true;
 
+        return true;
     }
 
     public void setColor(String newColor) {
@@ -172,7 +181,38 @@ public class CanvasView extends View {
         erase=isErase;
         if(erase) drawPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
         else drawPaint.setXfermode(null);
+    }
 
+    private class DrawingGestureListener implements GestureDetector.OnGestureListener {
 
+        @Override
+        public boolean onDown(MotionEvent e) {
+            return false;
+        }
+
+        @Override
+        public void onShowPress(MotionEvent e) {
+
+        }
+
+        @Override
+        public boolean onSingleTapUp(MotionEvent e) {
+            return false;
+        }
+
+        @Override
+        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+            return false;
+        }
+
+        @Override
+        public void onLongPress(MotionEvent e) {
+
+        }
+
+        @Override
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            return false;
+        }
     }
 }
