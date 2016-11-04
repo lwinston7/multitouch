@@ -36,10 +36,19 @@ public class CanvasView extends View{
     private float mX, mY;
     private float brushSize, lastBrushSize;
     private int bgColor = Color.WHITE;
+    private boolean isDrawCircle = false;
+    private Circle currentCircle;
 
     private static final float TOLERANCE = 5;
     private GestureDetector mGestureDetector;
 
+    private enum Mode {
+        Line,
+        Circle,
+        Rectangle,
+    }
+
+    private Mode currentMode = Mode.Line;
 
     public CanvasView(Context c, AttributeSet attrs) {
         super(c, attrs);
@@ -82,26 +91,45 @@ public class CanvasView extends View{
         if (drawPath != null && !erase) {
             canvas.drawPath(drawPath, drawPaint);
         }
+
+        if (currentCircle != null && !erase) {
+            canvas.drawCircle(currentCircle.getX(), currentCircle.getY(), currentCircle.getRadius(), drawPaint);
+        }
     }
 
     private void startTouch(float x, float y) {
-        drawPath = new Path();
-        drawPath.moveTo(x,y);
-        mX = x;
-        mY = y;
+        switch (currentMode) {
+            case Line:
+                drawPath = new Path();
+                drawPath.moveTo(x,y);
+                mX = x;
+                mY = y;
+                break;
+            case Circle:
+                currentCircle = new Circle(x, y, 1);
+                break;
+        }
     }
 
     private void moveTouch(float x, float y) {
-        float dx = Math.abs(x - mX);
-        float dy = Math.abs(y - mY);
-        if (dx >= TOLERANCE || dy >= TOLERANCE) {
-            drawPath.quadTo(mX, mY, (x + mX) / 2, (y + mY) / 2);
-            mX = x;
-            mY = y;
-        }
-        if (erase) {
-            // TODO: Does drawPath need to be cleared every time?
-            drawCanvas.drawPath(drawPath, drawPaint);
+        switch (currentMode) {
+            case Line:
+                float dx = Math.abs(x - mX);
+                float dy = Math.abs(y - mY);
+
+                if (dx >= TOLERANCE || dy >= TOLERANCE) {
+                    drawPath.quadTo(mX, mY, (x + mX) / 2, (y + mY) / 2);
+                    mX = x;
+                    mY = y;
+                }
+                if (erase) {
+                    // TODO: Does drawPath need to be cleared every time?
+                    drawCanvas.drawPath(drawPath, drawPaint);
+                }
+                break;
+            case Circle:
+                currentCircle.updateRadius(x, y);
+                break;
         }
     }
 
@@ -114,11 +142,19 @@ public class CanvasView extends View{
     }
 
     private void upTouch(float x, float y) {
-        moveTouch(x, y);
-        //drawPath.lineTo(mX, mY);
-        drawCanvas.drawPath(drawPath,drawPaint);
-        paths.add(drawPath);
-        drawPath = null;
+        switch (currentMode) {
+            case Line:
+                moveTouch(x, y);
+                drawCanvas.drawPath(drawPath, drawPaint);
+                paths.add(drawPath);
+                drawPath = null;
+                break;
+            case Circle:
+                currentCircle.updateRadius(x, y);
+                drawCanvas.drawCircle(currentCircle.getX(), currentCircle.getY(), currentCircle.getRadius(), drawPaint);
+                currentCircle = null;
+                break;
+        }
     }
 
     @Override
@@ -178,7 +214,7 @@ public class CanvasView extends View{
     public void setErase(boolean isErase){
     //set erase true or false
         erase=isErase;
-        if(erase) {
+        if (erase) {
             drawPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
             drawPaint.setColor(bgColor);
         } else {
