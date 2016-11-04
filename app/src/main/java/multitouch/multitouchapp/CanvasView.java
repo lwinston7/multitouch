@@ -17,7 +17,7 @@ import android.view.View;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.util.TypedValue;
-
+import android.graphics.Rect;
 import java.util.ArrayList;
 
 public class CanvasView extends View{
@@ -37,6 +37,8 @@ public class CanvasView extends View{
     private int bgColor = Color.WHITE;
     private boolean isDrawCircle = false;
     private Circle currentCircle;
+    private Rect currentRect;
+    private boolean isDrawingRect = false;
 
     private static final float TOLERANCE = 5;
     private GestureDetector mGestureDetector;
@@ -96,6 +98,10 @@ public class CanvasView extends View{
         if (currentCircle != null && currentMode != Mode.Erase) {
             canvas.drawCircle(currentCircle.getX(), currentCircle.getY(), currentCircle.getRadius(), drawPaint);
         }
+        if (currentRect != null && currentMode != Mode.Erase) {
+            //TODO:
+
+        }
     }
 
     private void startTouch(float x, float y) {
@@ -108,6 +114,9 @@ public class CanvasView extends View{
                 break;
             case Erase:
                 startPath(x, y);
+                break;
+            case Rectangle:
+                //TODO: CREATE RECT
                 break;
         }
     }
@@ -129,9 +138,12 @@ public class CanvasView extends View{
                 break;
             case Erase:
                 movePath(x, y);
-
                 // TODO: Does drawPath need to be cleared every time?
                 drawCanvas.drawPath(drawPath, drawPaint);
+            case Rectangle:
+                //TODO:
+                break;
+
         }
     }
 
@@ -166,6 +178,10 @@ public class CanvasView extends View{
                 break;
             case Erase:
                 upPath(x, y);
+            case Rectangle:
+                //TODO:
+                 break;
+
         }
     }
 
