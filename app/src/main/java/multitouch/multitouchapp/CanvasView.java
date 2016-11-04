@@ -202,6 +202,7 @@ public class CanvasView extends View{
     public boolean onTouchEvent(MotionEvent event) {
         float touchX = event.getX();
         float touchY = event.getY();
+
         if (this.mGestureDetector.onTouchEvent(event) || event.getPointerCount() > 1) {
             // We've detected one of our gestures or a multitouch gesture!
             switch (event.getAction()) {
