@@ -178,8 +178,20 @@ public class CanvasView extends View{
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (this.mGestureDetector.onTouchEvent(event)) {
-            // We've detected one of our gestures!
+        if (this.mGestureDetector.onTouchEvent(event) || event.getPointerCount() > 1) {
+            // We've detected one of our gestures or a multitouch gesture!
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_POINTER_DOWN:
+                    break;
+                case MotionEvent.ACTION_POINTER_UP:
+                    break;
+                case MotionEvent.ACTION_DOWN:
+                    break;
+                case MotionEvent.ACTION_UP:
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    break;
+            }
 
         } else {
             //Draw normally
