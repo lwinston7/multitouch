@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/MultitouchApp.iml" filepath="$PROJECT_DIR$/MultitouchApp.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/multitouchLauren.iml" filepath="$PROJECT_DIR$/multitouchLauren.iml" />
     </modules>
   </component>
 </project>

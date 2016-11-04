@@ -17,7 +17,7 @@ import android.view.View;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.util.TypedValue;
-
+import android.graphics.Rect;
 import java.util.ArrayList;
 
 public class CanvasView extends View{
@@ -37,9 +37,14 @@ public class CanvasView extends View{
     private int bgColor = Color.WHITE;
     private boolean isDrawCircle = false;
     private Circle currentCircle;
-
-    private static final float TOLERANCE = 5;
+    private Rect currentRect;
     private GestureDetector mGestureDetector;
+    float rectX, rectY;
+    float rectWidth = 100.0f;
+    float rectHeight = 50.0f;
+    private boolean isDrawingRect = false;
+    private static final float TOLERANCE = 5;
+
 
     private enum Mode {
         Line,
@@ -50,6 +55,8 @@ public class CanvasView extends View{
 
     private Mode currentMode = Mode.Line;
     private Mode prevMode = Mode.Line;
+
+
 
     public CanvasView(Context c, AttributeSet attrs) {
         super(c, attrs);
@@ -70,6 +77,7 @@ public class CanvasView extends View{
         drawPaint.setStrokeWidth(4f);
         drawPaint.setStrokeCap(Paint.Cap.ROUND);
         canvasPaint = new Paint(Paint.DITHER_FLAG);
+        rectX = rectY = 0;
     }
     @Override
     public void onSizeChanged(int w,int h, int oldw, int oldh) {
@@ -96,6 +104,10 @@ public class CanvasView extends View{
         if (currentCircle != null && currentMode != Mode.Erase) {
             canvas.drawCircle(currentCircle.getX(), currentCircle.getY(), currentCircle.getRadius(), drawPaint);
         }
+        if (currentRect != null && currentMode != Mode.Erase) {
+            canvas.drawRect(rectX, rectY, rectX + rectWidth, rectY + rectHeight, drawPaint);
+
+        }
     }
 
     private void startTouch(float x, float y) {
@@ -108,6 +120,9 @@ public class CanvasView extends View{
                 break;
             case Erase:
                 startPath(x, y);
+                break;
+            case Rectangle:
+                //TODO: CREATE RECT
                 break;
         }
     }
@@ -129,9 +144,12 @@ public class CanvasView extends View{
                 break;
             case Erase:
                 movePath(x, y);
-
                 // TODO: Does drawPath need to be cleared every time?
                 drawCanvas.drawPath(drawPath, drawPaint);
+            case Rectangle:
+                //TODO:
+                break;
+
         }
     }
 
@@ -166,6 +184,10 @@ public class CanvasView extends View{
                 break;
             case Erase:
                 upPath(x, y);
+            case Rectangle:
+                //TODO:
+                 break;
+
         }
     }
 
@@ -178,6 +200,9 @@ public class CanvasView extends View{
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        float touchX = event.getX();
+        float touchY = event.getY();
+
         if (this.mGestureDetector.onTouchEvent(event) || event.getPointerCount() > 1) {
             // We've detected one of our gestures or a multitouch gesture!
             switch (event.getAction()) {
