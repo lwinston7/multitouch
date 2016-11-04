@@ -31,7 +31,6 @@ public class CanvasView extends View{
     private Paint canvasPaint;
     private Paint drawPaint;
     Context context;
-    private boolean erase=false;
     private int paintColor = 0xFF660000;
     private float mX, mY;
     private float brushSize, lastBrushSize;
@@ -46,9 +45,11 @@ public class CanvasView extends View{
         Line,
         Circle,
         Rectangle,
+        Erase
     }
 
     private Mode currentMode = Mode.Line;
+    private Mode prevMode = Mode.Line;
 
     public CanvasView(Context c, AttributeSet attrs) {
         super(c, attrs);
@@ -88,11 +89,11 @@ public class CanvasView extends View{
 
         canvas.drawBitmap(canvasBitmap, 0, 0, canvasPaint);
 
-        if (drawPath != null && !erase) {
+        if (drawPath != null && currentMode != Mode.Erase) {
             canvas.drawPath(drawPath, drawPaint);
         }
 
-        if (currentCircle != null && !erase) {
+        if (currentCircle != null && currentMode != Mode.Erase) {
             canvas.drawCircle(currentCircle.getX(), currentCircle.getY(), currentCircle.getRadius(), drawPaint);
         }
     }
@@ -100,36 +101,48 @@ public class CanvasView extends View{
     private void startTouch(float x, float y) {
         switch (currentMode) {
             case Line:
-                drawPath = new Path();
-                drawPath.moveTo(x,y);
-                mX = x;
-                mY = y;
+                startPath(x, y);
                 break;
             case Circle:
                 currentCircle = new Circle(x, y, 1);
                 break;
+            case Erase:
+                startPath(x, y);
+                break;
         }
+    }
+
+    private void startPath(float x, float y) {
+        drawPath = new Path();
+        drawPath.moveTo(x,y);
+        mX = x;
+        mY = y;
     }
 
     private void moveTouch(float x, float y) {
         switch (currentMode) {
             case Line:
-                float dx = Math.abs(x - mX);
-                float dy = Math.abs(y - mY);
-
-                if (dx >= TOLERANCE || dy >= TOLERANCE) {
-                    drawPath.quadTo(mX, mY, (x + mX) / 2, (y + mY) / 2);
-                    mX = x;
-                    mY = y;
-                }
-                if (erase) {
-                    // TODO: Does drawPath need to be cleared every time?
-                    drawCanvas.drawPath(drawPath, drawPaint);
-                }
+                movePath(x, y);
                 break;
             case Circle:
                 currentCircle.updateRadius(x, y);
                 break;
+            case Erase:
+                movePath(x, y);
+
+                // TODO: Does drawPath need to be cleared every time?
+                drawCanvas.drawPath(drawPath, drawPaint);
+        }
+    }
+
+    private void movePath(float x, float y) {
+        float dx = Math.abs(x - mX);
+        float dy = Math.abs(y - mY);
+
+        if (dx >= TOLERANCE || dy >= TOLERANCE) {
+            drawPath.quadTo(mX, mY, (x + mX) / 2, (y + mY) / 2);
+            mX = x;
+            mY = y;
         }
     }
 
@@ -144,17 +157,23 @@ public class CanvasView extends View{
     private void upTouch(float x, float y) {
         switch (currentMode) {
             case Line:
-                moveTouch(x, y);
-                drawCanvas.drawPath(drawPath, drawPaint);
-                paths.add(drawPath);
-                drawPath = null;
+                upPath(x, y);
                 break;
             case Circle:
                 currentCircle.updateRadius(x, y);
                 drawCanvas.drawCircle(currentCircle.getX(), currentCircle.getY(), currentCircle.getRadius(), drawPaint);
                 currentCircle = null;
                 break;
+            case Erase:
+                upPath(x, y);
         }
+    }
+
+    private void upPath(float x, float y) {
+        movePath(x, y);
+        drawCanvas.drawPath(drawPath, drawPaint);
+        paths.add(drawPath);
+        drawPath = null;
     }
 
     @Override
@@ -213,11 +232,14 @@ public class CanvasView extends View{
 
     public void setErase(boolean isErase){
     //set erase true or false
-        erase=isErase;
-        if (erase) {
+        if (isErase) {
+            prevMode = currentMode;
+            currentMode = Mode.Erase;
             drawPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
             drawPaint.setColor(bgColor);
         } else {
+            //TODO: Change
+            currentMode = prevMode;
             drawPaint.setXfermode(null);
             drawPaint.setColor(paintColor);
         }
