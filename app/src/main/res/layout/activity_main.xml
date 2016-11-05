@@ -11,16 +11,14 @@
     tools:context="multitouch.multitouchapp.MainActivity">
 
     <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
         android:orientation="vertical">
 
         <!-- Gesture Discoverability area -->
         <FrameLayout
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:paddingLeft="50dp">
-
+            android:layout_height="wrap_content">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -34,7 +32,7 @@
 
             <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="fill_parent"
+                android:layout_height="wrap_content"
                 android:orientation="vertical">
 
                 <LinearLayout
@@ -43,19 +41,26 @@
                     android:orientation="vertical">
 
                     <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_width="70dp"
+                        android:layout_height="40dp"
+                        android:layout_gravity="bottom|center"
+                        android:layout_weight="1"
                         android:onClick="Open"
                         android:text="Open" />
+
+                    <Button
+                        android:id="@+id/buttonClear"
+                        android:layout_width="70dp"
+                        android:layout_height="40dp"
+                        android:layout_gravity="bottom|center"
+                        android:layout_weight="1"
+                        android:onClick="clearCanvas"
+                        android:text="@string/clear" />
 
                     <ImageButton
                         android:id="@+id/buttonNew"
                         android:layout_width="50dp"
                         android:layout_height="50dp"
-                        android:layout_alignEnd="@+id/buttonDraw"
-                        android:layout_alignParentTop="true"
-                        android:layout_alignRight="@+id/buttonDraw"
-                        android:layout_marginTop="11dp"
                         android:contentDescription="@string/start_new"
                         android:onClick="New"
                         android:src="@drawable/new_pic" />
@@ -84,14 +89,6 @@
                         android:contentDescription="@string/brush"
                         android:src="@drawable/brush" />
 
-                    <Button
-                        android:id="@+id/buttonClear"
-                        android:layout_width="70dp"
-                        android:layout_height="50dp"
-                        android:layout_gravity="bottom|center"
-                        android:layout_weight="1"
-                        android:onClick="clearCanvas"
-                        android:text="@string/clear" />
 
                 </LinearLayout>
 
