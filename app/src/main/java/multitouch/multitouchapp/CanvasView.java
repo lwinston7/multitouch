@@ -5,28 +5,28 @@ package multitouch.multitouchapp;
  */
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.util.TypedValue;
-import android.graphics.Rect;
 import java.util.ArrayList;
 
 public class CanvasView extends View{
 
-    public int width;
-    public int height;
     private Bitmap canvasBitmap;
     private Canvas drawCanvas;
-    private ArrayList<Path> paths = new ArrayList<Path>();
+    private ArrayList<Stroke> strokes = new ArrayList<Stroke>();
+    private Stroke currentStroke;
     private Path drawPath;
     private Paint canvasPaint;
     private Paint drawPaint;
@@ -35,26 +35,26 @@ public class CanvasView extends View{
     private float mX, mY;
     private float brushSize, lastBrushSize;
     private int bgColor = Color.WHITE;
-    private boolean isDrawCircle = false;
-    private Circle currentCircle;
-    private Rect currentRect;
-    private GestureDetector mGestureDetector;
-    float rectX, rectY;
-    float rectWidth = 100.0f;
-    float rectHeight = 50.0f;
-    private boolean isDrawingRect = false;
+    private MultitouchGestureDetector mGestureDetector;
     private static final float TOLERANCE = 5;
+    private boolean EAT_POINTER_INPUT = false;
+    private int EAT_COUNT = 0;
 
 
-    private enum Mode {
+    private enum DrawMode {
         Line,
         Circle,
         Rectangle,
         Erase
     }
+    
+    private enum TouchMode {
+        Single,
+        Select
+    }
 
-    private Mode currentMode = Mode.Line;
-    private Mode prevMode = Mode.Line;
+    private DrawMode currentDrawMode = DrawMode.Line;
+    private DrawMode prevDrawMode = DrawMode.Line;
 
 
 
@@ -62,7 +62,7 @@ public class CanvasView extends View{
         super(c, attrs);
         context = c;
         setupDrawing();
-        mGestureDetector = new GestureDetector(context, new DrawingGestureListener());
+        mGestureDetector = new MultitouchGestureDetector(context, new DrawingGestureListener());
     }
 
     public void setupDrawing(){
@@ -77,7 +77,6 @@ public class CanvasView extends View{
         drawPaint.setStrokeWidth(4f);
         drawPaint.setStrokeCap(Paint.Cap.ROUND);
         canvasPaint = new Paint(Paint.DITHER_FLAG);
-        rectX = rectY = 0;
     }
     @Override
     public void onSizeChanged(int w,int h, int oldw, int oldh) {
@@ -89,40 +88,39 @@ public class CanvasView extends View{
     @Override
     public void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        /*
-        for (int i = 0; i < paths.size(); i++) {
-            canvas.drawPath(paths.get(i), drawPaint);
-        }
-        */
 
         canvas.drawBitmap(canvasBitmap, 0, 0, canvasPaint);
 
-        if (drawPath != null && currentMode != Mode.Erase) {
-            canvas.drawPath(drawPath, drawPaint);
-        }
-
-        if (currentCircle != null && currentMode != Mode.Erase) {
-            canvas.drawCircle(currentCircle.getX(), currentCircle.getY(), currentCircle.getRadius(), drawPaint);
-        }
-        if (currentRect != null && currentMode != Mode.Erase) {
-            canvas.drawRect(rectX, rectY, rectX + rectWidth, rectY + rectHeight, drawPaint);
-
+        if (currentStroke != null && currentDrawMode != DrawMode.Erase) {
+            if (currentStroke instanceof DrawPath) {
+                canvas.drawPath(((DrawPath) currentStroke).getDrawPath(), drawPaint);
+            } else if (currentStroke instanceof Circle){
+                // draw shape.
+                Circle c = (Circle) currentStroke;
+                canvas.drawCircle(c.getX(), c.getY(), c.getRadius(), drawPaint);
+            } else if (currentStroke instanceof Rectangle) {
+                Rectangle r = (Rectangle) currentStroke;
+                canvas.drawRect(r.getX(), r.getY(), r.getWidth(), r.getHeight(), drawPaint);
+            }
         }
     }
 
     private void startTouch(float x, float y) {
-        switch (currentMode) {
+        switch (currentDrawMode) {
             case Line:
-                startPath(x, y);
+                currentStroke = new DrawPath();
+                currentStroke.startStroke(x, y);
                 break;
             case Circle:
-                currentCircle = new Circle(x, y, 1);
+                currentStroke = new Circle();
+                currentStroke.startStroke(x, y);
                 break;
             case Erase:
                 startPath(x, y);
                 break;
             case Rectangle:
-                //TODO: CREATE RECT
+                currentStroke = new Rectangle();
+                currentStroke.startStroke(x, y);
                 break;
         }
     }
@@ -135,21 +133,13 @@ public class CanvasView extends View{
     }
 
     private void moveTouch(float x, float y) {
-        switch (currentMode) {
-            case Line:
-                movePath(x, y);
-                break;
-            case Circle:
-                currentCircle.updateRadius(x, y);
-                break;
-            case Erase:
-                movePath(x, y);
-                // TODO: Does drawPath need to be cleared every time?
-                drawCanvas.drawPath(drawPath, drawPaint);
-            case Rectangle:
-                //TODO:
-                break;
-
+        if (currentDrawMode == DrawMode.Erase) {
+            movePath(x, y);
+            // TODO: Does drawPath need to be cleared every time?
+            drawCanvas.drawPath(drawPath, drawPaint);
+        }
+        if (currentStroke != null) {
+            currentStroke.update(x, y);
         }
     }
 
@@ -169,57 +159,77 @@ public class CanvasView extends View{
             drawPath.reset();
         }
         drawCanvas.drawColor(Color.WHITE);
+        strokes = new ArrayList<Stroke>();
         invalidate();
     }
 
     private void upTouch(float x, float y) {
-        switch (currentMode) {
-            case Line:
-                upPath(x, y);
-                break;
-            case Circle:
-                currentCircle.updateRadius(x, y);
-                drawCanvas.drawCircle(currentCircle.getX(), currentCircle.getY(), currentCircle.getRadius(), drawPaint);
-                currentCircle = null;
-                break;
-            case Erase:
-                upPath(x, y);
-            case Rectangle:
-                //TODO:
-                 break;
+        if (currentDrawMode == DrawMode.Erase) {
+            upPath(x, y);
+        } else if (currentStroke != null){
+            currentStroke.finishStroke(x, y);
 
+            switch (currentDrawMode) {
+                case Line:
+                    drawCanvas.drawPath(((DrawPath) currentStroke).getDrawPath(), drawPaint);
+                    break;
+                case Circle:
+                    Circle c = (Circle) currentStroke;
+                    drawCanvas.drawCircle(c.getX(), c.getY(), c.getRadius(), drawPaint);
+                    break;
+                case Rectangle:
+                    Rectangle r = (Rectangle) currentStroke;
+                    drawCanvas.drawRect(r.getX(), r.getY(), r.getWidth(), r.getHeight(), drawPaint);
+                    break;
+
+            }
+
+            strokes.add(currentStroke);
+            currentStroke = null;
         }
     }
 
     private void upPath(float x, float y) {
         movePath(x, y);
         drawCanvas.drawPath(drawPath, drawPaint);
-        paths.add(drawPath);
         drawPath = null;
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        float touchX = event.getX();
-        float touchY = event.getY();
-
         if (this.mGestureDetector.onTouchEvent(event) || event.getPointerCount() > 1) {
             // We've detected one of our gestures or a multitouch gesture!
+            if (mGestureDetector.onDoubleHoldEvent(event)) {
+                Stroke selectedStroke = findNearestStroke(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
+                // handle two finger press here.
+
+            }
             switch (event.getAction()) {
                 case MotionEvent.ACTION_POINTER_DOWN:
+                    Log.d("pointers", "pointer down");
                     break;
                 case MotionEvent.ACTION_POINTER_UP:
+                    Log.d("pointers", "pointer up");
+                    EatInput();
                     break;
                 case MotionEvent.ACTION_DOWN:
+                    Log.d("pointers", "down");
                     break;
                 case MotionEvent.ACTION_UP:
+                    Log.d("pointers", "up");
+                    EatInput();
                     break;
                 case MotionEvent.ACTION_MOVE:
+                    Log.d("pointers", "move");
                     break;
             }
 
+        } else if (EAT_COUNT > 0) {
+            Log.d("pointers", "eat line input " + EAT_COUNT);
+            EAT_COUNT--;
         } else {
             //Draw normally
+            Log.d("pointers", "draw normally " + EAT_COUNT);
             float x = event.getX();
             float y = event.getY();
 
@@ -270,15 +280,41 @@ public class CanvasView extends View{
     public void setErase(boolean isErase){
     //set erase true or false
         if (isErase) {
-            prevMode = currentMode;
-            currentMode = Mode.Erase;
+            prevDrawMode = currentDrawMode;
+            currentDrawMode = DrawMode.Erase;
             drawPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
             drawPaint.setColor(bgColor);
         } else {
             //TODO: Change
-            currentMode = prevMode;
+            currentDrawMode = prevDrawMode;
             drawPaint.setXfermode(null);
             drawPaint.setColor(paintColor);
+        }
+    }
+
+    public void EatInput() {
+        EAT_POINTER_INPUT = true;
+        EAT_COUNT++;
+        currentStroke = null;
+    }
+
+    public Stroke findNearestStroke(float x1, float y1, float x2, float y2) {
+        float nearestDistance = Integer.MAX_VALUE;
+        int nearestStrokeIndex = -1;
+        // Give priority to strokes drawn most recently.
+        for (int i = strokes.size() - 1; i >= 0; i--) {
+            float currDistance = strokes.get(i).distanceFromTap(x1, y1, x2, y2);
+            if (currDistance < nearestDistance) {
+                nearestDistance = currDistance;
+                nearestStrokeIndex = i;
+            };
+        }
+
+        if (nearestStrokeIndex > -1) {
+            Log.d("stroke", nearestStrokeIndex + "");
+            return strokes.get(nearestStrokeIndex);
+        } else {
+            return null;
         }
     }
 
