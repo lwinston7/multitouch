@@ -13,7 +13,10 @@
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
 
         <!-- Gesture Discoverability area -->
         <FrameLayout
@@ -36,7 +39,7 @@
                 android:orientation="vertical">
 
                 <LinearLayout
-                    android:layout_width="wrap_content"
+                    android:layout_width="107dp"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
@@ -88,6 +91,32 @@
                         android:layout_height="50dp"
                         android:contentDescription="@string/brush"
                         android:src="@drawable/brush" />
+
+                    <RadioGroup
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1">
+
+                        <RadioButton
+                            android:text="Rectangle"
+                            android:layout_width="110dp"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/btnRect" />
+
+                        <RadioButton
+                            android:text="Circle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/btnCircle"
+                            android:layout_weight="1" />
+
+                        <RadioButton
+                            android:text="Line"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/btnLine"
+                            android:layout_weight="1" />
+                    </RadioGroup>
 
 
                 </LinearLayout>
@@ -232,11 +261,13 @@
                     </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
+
             <multitouch.multitouchapp.CanvasView
                 android:id="@+id/mainCanvas"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:textColor="#FFFFFF" />
+
         </LinearLayout>
     </LinearLayout>
 </RelativeLayout>
