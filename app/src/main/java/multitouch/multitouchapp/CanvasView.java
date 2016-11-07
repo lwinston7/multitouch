@@ -21,6 +21,8 @@ import android.graphics.PorterDuffXfermode;
 import android.util.TypedValue;
 import java.util.ArrayList;
 
+import static android.view.ViewConfiguration.getLongPressTimeout;
+
 public class CanvasView extends View{
 
     private Bitmap canvasBitmap;
@@ -47,15 +49,17 @@ public class CanvasView extends View{
         Rectangle,
         Erase
     }
-    
-    private enum TouchMode {
-        Single,
-        Select
-    }
 
     private DrawMode currentDrawMode = DrawMode.Line;
     private DrawMode prevDrawMode = DrawMode.Line;
 
+    private enum TouchMode {
+        SingleFingerDraw, // 1-Finger Touch
+        TwoFingerWait, // 2-Finger Wait for other movement
+        Hold // 2-Finger Hold
+    }
+    private TouchMode currTouchMode = TouchMode.SingleFingerDraw;
+    private float mLastFingerDown = 0;
 
 
     public CanvasView(Context c, AttributeSet attrs) {
@@ -91,18 +95,18 @@ public class CanvasView extends View{
 
         canvas.drawBitmap(canvasBitmap, 0, 0, canvasPaint);
 
-        if (currentStroke != null && currentDrawMode != DrawMode.Erase) {
-            if (currentStroke instanceof DrawPath) {
-                canvas.drawPath(((DrawPath) currentStroke).getDrawPath(), drawPaint);
-            } else if (currentStroke instanceof Circle){
-                // draw shape.
-                Circle c = (Circle) currentStroke;
-                canvas.drawCircle(c.getX(), c.getY(), c.getRadius(), drawPaint);
-            } else if (currentStroke instanceof Rectangle) {
-                Rectangle r = (Rectangle) currentStroke;
-                canvas.drawRect(r.getX(), r.getY(), r.getWidth(), r.getHeight(), drawPaint);
+            if (currentStroke != null && currentDrawMode != DrawMode.Erase) {
+                if (currentStroke instanceof DrawPath) {
+                    canvas.drawPath(((DrawPath) currentStroke).getDrawPath(), drawPaint);
+                } else if (currentStroke instanceof Circle) {
+                    // draw shape.
+                    Circle c = (Circle) currentStroke;
+                    canvas.drawCircle(c.getX(), c.getY(), c.getRadius(), drawPaint);
+                } else if (currentStroke instanceof Rectangle) {
+                    Rectangle r = (Rectangle) currentStroke;
+                    canvas.drawRect(r.getX(), r.getY(), r.getWidth(), r.getHeight(), drawPaint);
+                }
             }
-        }
     }
 
     private void startTouch(float x, float y) {
@@ -197,60 +201,72 @@ public class CanvasView extends View{
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (this.mGestureDetector.onTouchEvent(event) || event.getPointerCount() > 1) {
-            // We've detected one of our gestures or a multitouch gesture!
-            if (mGestureDetector.onDoubleHoldEvent(event)) {
-                Stroke selectedStroke = findNearestStroke(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
-                // handle two finger press here.
+        //Draw normally
+        float x = event.getX();
+        float y = event.getY();
 
-            }
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_POINTER_DOWN:
-                    Log.d("pointers", "pointer down");
-                    break;
-                case MotionEvent.ACTION_POINTER_UP:
-                    Log.d("pointers", "pointer up");
-                    EatInput();
-                    break;
-                case MotionEvent.ACTION_DOWN:
-                    Log.d("pointers", "down");
-                    break;
-                case MotionEvent.ACTION_UP:
-                    Log.d("pointers", "up");
-                    EatInput();
-                    break;
-                case MotionEvent.ACTION_MOVE:
-                    Log.d("pointers", "move");
-                    break;
-            }
-
-        } else if (EAT_COUNT > 0) {
-            Log.d("pointers", "eat line input " + EAT_COUNT);
-            EAT_COUNT--;
-        } else {
-            //Draw normally
-            Log.d("pointers", "draw normally " + EAT_COUNT);
-            float x = event.getX();
-            float y = event.getY();
-
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    startTouch(x, y);
-                    invalidate();
-                    break;
-                case MotionEvent.ACTION_MOVE:
+        switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_DOWN:
+                startTouch(x, y);
+                Log.d("1 pointer", "down");
+                invalidate();
+                break;
+            case MotionEvent.ACTION_MOVE:
+                if (currTouchMode == TouchMode.TwoFingerWait) {
+                    Log.d("pointers", "multiple pointer move");
+                    if (System.currentTimeMillis() - mLastFingerDown > getLongPressTimeout()) {
+                        currTouchMode = TouchMode.Hold;
+                        currentStroke = findNearestStroke(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
+                        currentStroke.startMove(x, y);
+                        drawPaint.setStrokeWidth(60);
+                        setErase(true);
+                        drawCanvas.drawPath(((DrawPath) currentStroke).getDrawPath(), drawPaint);
+                        setErase(false);
+                        // TODO: Remove stroke from arraylist as well.
+                        Log.d("pointers", "HOLDING!!!!");
+                    }
+                } else if (currTouchMode == TouchMode.SingleFingerDraw){
                     moveTouch(x, y);
+                    Log.d("1 pointer", "move");
+                } else if (currTouchMode == TouchMode.Hold) {
+                    Log.d("pointers", "MOVING");
+                    currentStroke.move(x, y);
                     invalidate();
-                    break;
-                case MotionEvent.ACTION_UP:
+                }
+                invalidate();
+                break;
+            case MotionEvent.ACTION_UP:
+                if (currTouchMode == TouchMode.SingleFingerDraw) {
                     upTouch(x, y);
-                    invalidate();
-                    break;
-                case MotionEvent.ACTION_OUTSIDE:
-                    upTouch(x, y);
-                    invalidate();
-                    break;
-            }
+                    Log.d("1 pointer", "up");
+                } else {
+                    currTouchMode = TouchMode.SingleFingerDraw;
+                    drawPaint.setStrokeWidth(brushSize);
+                    drawCanvas.drawPath(((DrawPath)currentStroke).getDrawPath(), drawPaint);
+                    strokes.add(currentStroke);
+                    currentStroke = null;
+                }
+                invalidate();
+                break;
+            case MotionEvent.ACTION_OUTSIDE:
+                upTouch(x, y);
+                Log.d("1 pointer", "pointer outside");
+                invalidate();
+                break;
+            case MotionEvent.ACTION_POINTER_DOWN:
+                if (currTouchMode == TouchMode.SingleFingerDraw) {
+                    currTouchMode = TouchMode.TwoFingerWait;
+                    mLastFingerDown = System.currentTimeMillis();
+                    currentStroke = null;
+                }
+                Log.d("pointers", "pointer down");
+                break;
+            case MotionEvent.ACTION_POINTER_UP:
+                Log.d("pointers", "pointer up");
+                break;
+            default:
+                Log.d("1 pointer", event.toString());
+                break;
         }
 
         return true;
@@ -295,6 +311,7 @@ public class CanvasView extends View{
     public void EatInput() {
         EAT_POINTER_INPUT = true;
         EAT_COUNT++;
+        Log.d("pointer eat", "" + EAT_COUNT);
         currentStroke = null;
     }
 
@@ -312,7 +329,7 @@ public class CanvasView extends View{
 
         if (nearestStrokeIndex > -1) {
             Log.d("stroke", nearestStrokeIndex + "");
-            return strokes.get(nearestStrokeIndex);
+            return strokes.remove(nearestStrokeIndex);
         } else {
             return null;
         }

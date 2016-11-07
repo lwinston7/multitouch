@@ -40,6 +40,16 @@ public class Rectangle extends DrawShape{
         return 0;
     }
 
+    @Override
+    public void move(float x, float y) {
+
+    }
+
+    @Override
+    public void startMove(float x, float y) {
+
+    }
+
     public float getX() {
         return x;
     }

@@ -17,12 +17,12 @@ public class MultitouchGestureDetector extends GestureDetector{
         super(context, listener);
     }
 
-    public boolean onDoubleHoldEvent(MotionEvent motionEvent) {
-        if(motionEvent.getActionMasked() == MotionEvent.ACTION_POINTER_DOWN && motionEvent.getActionIndex()==0){
+    public boolean isDoubleHoldEvent(MotionEvent motionEvent) {
+        if(motionEvent.getAction() == MotionEvent.ACTION_POINTER_DOWN && motionEvent.getActionIndex()==0){
             mTwoFingerTimeDown = System.currentTimeMillis();
         }
 
-        if(motionEvent.getActionMasked() == MotionEvent.ACTION_POINTER_UP && motionEvent.getActionIndex()==0 ){
+        if(motionEvent.getAction() == MotionEvent.ACTION_POINTER_UP && motionEvent.getActionIndex()==0 ){
             if ((System.currentTimeMillis()-mTwoFingerTimeDown) >= getLongPressTimeout()) {
                 //long double-press action
                 Log.d("mask", "two finger tap");

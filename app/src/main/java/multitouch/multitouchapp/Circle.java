@@ -51,4 +51,14 @@ public class Circle extends DrawShape {
     public float distanceFromTap(float x1, float y1, float x2, float y2) {
         return 0;
     }
+
+    @Override
+    public void move(float x, float y) {
+
+    }
+
+    @Override
+    public void startMove(float x, float y) {
+
+    }
 }

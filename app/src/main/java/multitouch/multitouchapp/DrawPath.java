@@ -2,7 +2,7 @@ package multitouch.multitouchapp;
 
 import android.graphics.Path;
 import android.graphics.Point;
-import android.graphics.RectF;
+import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -16,6 +16,8 @@ public class DrawPath extends Stroke {
     private float mX;
     private float mY;
     private static final float TOLERANCE = 5;
+    private float moveX = 0;
+    private float moveY = 0;
 
     @Override
     public void startStroke(float x, float y) {
@@ -65,6 +67,18 @@ public class DrawPath extends Stroke {
             }
         }
         return minDistance;
+    }
+
+    @Override
+    public void move(float x, float y) {
+        drawPath.offset(x - moveX, y - moveY);
+        moveX = x;
+        moveY = y;
+    }
+
+    public void startMove(float x, float y) {
+        moveX = x;
+        moveY = y;
     }
 
     private double distance(Point start, Point end) {
