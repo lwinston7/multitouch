@@ -1,18 +1,21 @@
 package multitouch.multitouchapp;
 
 import android.app.Dialog;
+import android.provider.MediaStore;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
     private CanvasView customCanvas;
     private ImageButton currPaint, drawBtn, eraseBtn;
     private float smallBrush, mediumBrush, largeBrush;
+    private RadioButton btnLine, btnRect, btnCircle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +40,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         eraseBtn = (ImageButton)findViewById(R.id.buttonErase);
         eraseBtn.setOnClickListener(this);
 
+        btnLine = (RadioButton)findViewById(R.id.btnLine);
+        btnLine.setOnClickListener(this);
+
+        btnRect = (RadioButton)findViewById(R.id.btnRect);
+        btnRect.setOnClickListener(this);
+
+        btnCircle = (RadioButton)findViewById(R.id.btnCircle);
+        btnCircle.setOnClickListener(this);
+
+
+
+
+
     }
 
     public void clearCanvas(View v) {
@@ -54,12 +70,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             currPaint.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.paint));
             currPaint=(ImageButton)view;
 
-
         }
     }
 
 
     public void New(View view) {
+
 
     }
 
@@ -134,6 +150,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             });
             brushDialog.show();
+        } else if (view.getId()==R.id.btnCircle) {
+            btnCircle.setOnClickListener( new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    customCanvas.setCircle(true);
+                }
+            });
+
+        } else if (view.getId()==R.id.btnRect) {
+            btnCircle.setOnClickListener( new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    customCanvas.setRect(true);
+                }
+            });
+
+        } else if (view.getId()==R.id.btnLine) {
+            btnCircle.setOnClickListener( new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    customCanvas.setLine(true);
+                }
+            });
         }
     }
 

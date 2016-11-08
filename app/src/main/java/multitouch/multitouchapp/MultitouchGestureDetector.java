@@ -13,6 +13,7 @@ import static android.view.ViewConfiguration.getLongPressTimeout;
 
 public class MultitouchGestureDetector extends GestureDetector{
     private float mTwoFingerTimeDown = 0;
+
     public MultitouchGestureDetector(Context context, OnGestureListener listener) {
         super(context, listener);
     }
@@ -43,4 +44,33 @@ public class MultitouchGestureDetector extends GestureDetector{
             return false;
         }
     }
+
+    public boolean onCloneEvent(MotionEvent motionEvent) {
+        if (motionEvent.getPointerCount() > 4) {
+            // TODO: Check to see if pointers are growing or shrinking.
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public boolean onRotateEvent(MotionEvent motionEvent) {
+        if (motionEvent.getPointerCount() > 4) {
+            // TODO: Check to see if pointers are growing or shrinking.
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public boolean onMoveEvent(MotionEvent motionEvent) {
+        if (motionEvent.getPointerCount() > 4) {
+            // TODO: Check to see if pointers are growing or shrinking.
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
 }

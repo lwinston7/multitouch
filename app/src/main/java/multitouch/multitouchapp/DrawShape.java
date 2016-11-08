@@ -5,4 +5,5 @@ package multitouch.multitouchapp;
  */
 
 public abstract class DrawShape extends Stroke {
+
 }

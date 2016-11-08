@@ -20,6 +20,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.util.TypedValue;
 import java.util.ArrayList;
+import android.graphics.PointF;
 
 import static android.view.ViewConfiguration.getLongPressTimeout;
 
@@ -53,13 +54,24 @@ public class CanvasView extends View{
     private DrawMode currentDrawMode = DrawMode.Line;
     private DrawMode prevDrawMode = DrawMode.Line;
 
+
     private enum TouchMode {
         SingleFingerDraw, // 1-Finger Touch
         TwoFingerWait, // 2-Finger Wait for other movement
         Hold // 2-Finger Hold
     }
+
     private TouchMode currTouchMode = TouchMode.SingleFingerDraw;
     private float mLastFingerDown = 0;
+
+    private enum GestureMode {
+        Drag,
+        Rotate,
+        Scale,
+        Clone
+    }
+
+    private GestureMode currGestureMode = null;
 
 
     public CanvasView(Context c, AttributeSet attrs) {
@@ -110,6 +122,7 @@ public class CanvasView extends View{
     }
 
     private void startTouch(float x, float y) {
+
         switch (currentDrawMode) {
             case Line:
                 currentStroke = new DrawPath();
@@ -172,7 +185,7 @@ public class CanvasView extends View{
             upPath(x, y);
         } else if (currentStroke != null){
             currentStroke.finishStroke(x, y);
-
+            Log.d("UpTOUCH", currentDrawMode.toString());
             switch (currentDrawMode) {
                 case Line:
                     drawCanvas.drawPath(((DrawPath) currentStroke).getDrawPath(), drawPaint);
@@ -216,15 +229,30 @@ public class CanvasView extends View{
                     Log.d("pointers", "multiple pointer move");
                     if (System.currentTimeMillis() - mLastFingerDown > getLongPressTimeout()) {
                         currTouchMode = TouchMode.Hold;
-                        currentStroke = findNearestStroke(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
+                        //java.lang.IllegalArgumentException: pointerIndex out of range
+                        if (event.getPointerCount() >= 2) {
+                            currentStroke = findNearestStroke(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
+                        }
                         currentStroke.startMove(x, y);
-                        drawPaint.setStrokeWidth(60);
+                        //drawPaint.setStrokeWidth(60);
                         setErase(true);
+                        //java.lang.ClassCastException: multitouch.multitouchapp.Rectangle cannot be cast to multitouch.multitouchapp.DrawPath
                         drawCanvas.drawPath(((DrawPath) currentStroke).getDrawPath(), drawPaint);
                         setErase(false);
                         // TODO: Remove stroke from arraylist as well.
                         Log.d("pointers", "HOLDING!!!!");
                     }
+                    if (currGestureMode == GestureMode.Drag) {
+                        //TODO: drag shape
+                    } else if (currGestureMode == GestureMode.Clone) {
+                        //TODO: clone shape
+                    } else if (currGestureMode == GestureMode.Rotate) {
+                        //TODO: rotate shape
+                    } else if (currGestureMode == GestureMode.Scale) {
+                        //TODO: scale shape
+                    }
+
+
                 } else if (currTouchMode == TouchMode.SingleFingerDraw){
                     moveTouch(x, y);
                     Log.d("1 pointer", "move");
@@ -242,8 +270,10 @@ public class CanvasView extends View{
                 } else {
                     currTouchMode = TouchMode.SingleFingerDraw;
                     drawPaint.setStrokeWidth(brushSize);
-                    drawCanvas.drawPath(((DrawPath)currentStroke).getDrawPath(), drawPaint);
-                    strokes.add(currentStroke);
+                    if (currentStroke != null) {
+                        drawCanvas.drawPath(((DrawPath)currentStroke).getDrawPath(), drawPaint);
+                        strokes.add(currentStroke);
+                    }
                     currentStroke = null;
                 }
                 invalidate();
@@ -258,8 +288,24 @@ public class CanvasView extends View{
                     currTouchMode = TouchMode.TwoFingerWait;
                     mLastFingerDown = System.currentTimeMillis();
                     currentStroke = null;
+                    Log.d("pointers", "pointer down tow fingerwait" );
                 }
-                Log.d("pointers", "pointer down");
+                if (event.getPointerCount() == 2) {
+                    currGestureMode = GestureMode.Drag;
+                    Log.d("pointers", "pointer down 2");
+                }
+                if (event.getPointerCount() == 3) {
+                    currGestureMode = GestureMode.Clone;
+                    Log.d("pointers", "pointer down 3");
+                }
+                if (event.getPointerCount() == 4) {
+                    currGestureMode = GestureMode.Rotate;
+                    Log.d("pointers", "pointer down 4");
+                }
+                if (event.getPointerCount() == 5) {
+                    currGestureMode = GestureMode.Scale;
+                    Log.d("pointers", "pointer down 5");
+                }
                 break;
             case MotionEvent.ACTION_POINTER_UP:
                 Log.d("pointers", "pointer up");
@@ -279,7 +325,7 @@ public class CanvasView extends View{
     }
 
     public void setBrushSize(float newSize){
-    //update size
+        //update size
         float pixelAmount = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 newSize, getResources().getDisplayMetrics());
         brushSize=pixelAmount;
@@ -294,7 +340,7 @@ public class CanvasView extends View{
     }
 
     public void setErase(boolean isErase){
-    //set erase true or false
+        //set erase true or false
         if (isErase) {
             prevDrawMode = currentDrawMode;
             currentDrawMode = DrawMode.Erase;
@@ -307,6 +353,59 @@ public class CanvasView extends View{
             drawPaint.setColor(paintColor);
         }
     }
+
+    public void setRect(boolean isRect) {
+        if (isRect) {
+            prevDrawMode = currentDrawMode;
+            currentDrawMode = DrawMode.Rectangle;
+
+        } else {
+            currentDrawMode = prevDrawMode;
+        }
+    }
+
+    public void setCircle(boolean isCircle) {
+        if (isCircle) {
+            prevDrawMode = currentDrawMode;
+            currentDrawMode = DrawMode.Circle;
+
+        } else {
+            currentDrawMode = prevDrawMode;
+        }
+    }
+
+    public void setLine(boolean isLine) {
+        if (isLine) {
+            prevDrawMode = currentDrawMode;
+            currentDrawMode = DrawMode.Line;
+
+        } else {
+            currentDrawMode = prevDrawMode;
+        }
+    }
+
+    //calculate the degree to be rotated by
+    private float rotation(MotionEvent event) {
+        double delta_x = (event.getX(2) - event.getX(3));
+        double delta_y = (event.getY(2) - event.getY(3));
+        double radians = Math.atan2(delta_x, delta_y);
+        return (float) Math.toDegrees(radians);
+    }
+
+    //determine the space between the first two fingers
+    private float spacingOneTwo(MotionEvent event) {
+        float x = event.getX(0) - event.getY(1);
+        float y = event.getY(0) - event.getY(1);
+        return (float) Math.sqrt(x * x + y * y);
+    }
+
+    //determine the midPoint of the the 3, 4 fingers
+    private void midPointThirdFlour(PointF point, MotionEvent event) {
+        float x = event.getX(2) + event.getY(3);
+        float y = event.getY(2) + event.getY(3);
+        point.set(x/2, y/2);
+    }
+
 
     public void EatInput() {
         EAT_POINTER_INPUT = true;

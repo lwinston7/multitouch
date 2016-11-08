@@ -10,6 +10,7 @@ public class Rectangle extends DrawShape{
     float x, y;
     float width = 100.0f;
     float height = 50.0f;
+
     @Override
     public void startStroke(float x, float y) {
         this.x = x;
