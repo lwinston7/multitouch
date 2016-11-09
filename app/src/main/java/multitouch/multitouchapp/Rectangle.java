@@ -61,6 +61,7 @@ public class Rectangle extends DrawShape{
     }
 
     @Override
+    //move- track
     public void move(float x1, float y1) {
         x = x1;
         y = y1;
@@ -69,11 +70,10 @@ public class Rectangle extends DrawShape{
     }
 
     @Override
+    //start move - starting point
     public void startMove(float x1, float y1) {
         x = x1;
         y = y1;
-
-
     }
 
     public float getX() {

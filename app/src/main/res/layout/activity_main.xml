@@ -51,21 +51,12 @@
                         android:onClick="Open"
                         android:text="Open" />
 
-                    <Button
-                        android:id="@+id/buttonClear"
-                        android:layout_width="70dp"
-                        android:layout_height="40dp"
-                        android:layout_gravity="bottom|center"
-                        android:layout_weight="1"
-                        android:onClick="clearCanvas"
-                        android:text="@string/clear" />
-
                     <ImageButton
                         android:id="@+id/buttonNew"
                         android:layout_width="50dp"
                         android:layout_height="50dp"
                         android:contentDescription="@string/start_new"
-                        android:onClick="New"
+                        android:onClick="clearCanvas"
                         android:src="@drawable/new_pic" />
 
                     <ImageButton
