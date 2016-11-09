@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.util.AttributeSet;
@@ -44,6 +45,8 @@ public class CanvasView extends View{
     private int EAT_COUNT = 0;
     private float prevScaleDist;
     private float currScaleDist;
+    private Matrix matrix = new Matrix();
+    private Matrix savedMatrix = new Matrix();
 
 
     private enum DrawMode {
@@ -268,7 +271,7 @@ public class CanvasView extends View{
                         if (event.getPointerCount() == 3 ) {
                             float cloneX = event.getX(2);
                             float cloneY = event.getY(2);
-                            //TODO: create same stroke
+
                             Stroke tappedStroke = getTappedShape(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
                             if (tappedStroke != null) {
                                 if (tappedStroke instanceof Circle) {
@@ -291,12 +294,31 @@ public class CanvasView extends View{
                         }
                     } else if (currGestureMode == GestureMode.Rotate) {
                         if (event.getPointerCount() == 4) {
-                            float ratateDegree = rotation(event);
-                            //TODO: rotate shape
+                            Stroke tappedStroke = getTappedShape(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
+                            if (tappedStroke != null) {
+                                float rotateDegree = rotation(event);
+                                if (tappedStroke instanceof Circle) {
+                                    Circle tappedCircle = (Circle) tappedStroke;
+                                    drawCanvas.save();
+                                    drawCanvas.rotate(rotateDegree);
+                                    drawCanvas.drawCircle(tappedCircle.getX(), tappedCircle.getY(),
+                                            tappedCircle.getRadius(),drawPaint);
+                                    drawCanvas.restore();
+                                    break;
+                                } else if (tappedStroke instanceof Rectangle) {
+                                    Rectangle tappedRect = (Rectangle) tappedStroke;
+                                    drawCanvas.save();
+                                    drawCanvas.rotate(rotateDegree);
+                                    drawCanvas.drawRect(tappedRect.getX(),tappedRect.getY(),
+                                            tappedRect.getWidth(), tappedRect.getHeight(),drawPaint);
+                                    drawCanvas.restore();
+                                }
+
+                            }
                         }
 
                     } else if (currGestureMode == GestureMode.Scale) {
-                        //TODO: scale shape
+                        //scale shape
                         currScaleDist = spacingScale(event);
                         float scaleIndex = currScaleDist/prevScaleDist;
                         if (currentStroke instanceof Circle) {
