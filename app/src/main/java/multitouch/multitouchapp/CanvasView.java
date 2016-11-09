@@ -255,10 +255,12 @@ public class CanvasView extends View{
                                     Circle tappedCicle = (Circle) tappedStroke;
                                     drawCanvas.drawCircle(tappedCicle.getX(), tappedCicle.getY(),
                                             tappedCicle.getRadius(), drawPaint);
+                                    break;
                                 } else if (tappedStroke instanceof Rectangle) {
                                     Rectangle tappedR = (Rectangle) tappedStroke;
                                     drawCanvas.drawRect(tappedR.getX(), tappedR.getY(),
                                             tappedR.getWidth(), tappedR.getWidth(),drawPaint);
+                                    break;
                                 }
                             }
                         }
@@ -305,7 +307,6 @@ public class CanvasView extends View{
                             currentStroke.update(updatedW, updatedH);
                         }
                     }
-
 
                 } else if (currTouchMode == TouchMode.SingleFingerDraw){
                     moveTouch(x, y);
