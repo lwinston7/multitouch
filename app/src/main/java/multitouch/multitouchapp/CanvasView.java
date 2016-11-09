@@ -237,7 +237,15 @@ public class CanvasView extends View{
                         //drawPaint.setStrokeWidth(60);
                         setErase(true);
                         //java.lang.ClassCastException: multitouch.multitouchapp.Rectangle cannot be cast to multitouch.multitouchapp.DrawPath
-                        drawCanvas.drawPath(((DrawPath) currentStroke).getDrawPath(), drawPaint);
+                        if (currentStroke instanceof DrawPath) {
+                            drawCanvas.drawPath(((DrawPath) currentStroke).getDrawPath(), drawPaint);
+                        } else if (currentStroke instanceof Circle) {
+                            Circle c = (Circle) currentStroke;
+                            drawCanvas.drawCircle(c.getX(),c.getY(),c.getRadius(), drawPaint);
+                        } else if (currentStroke instanceof Rectangle) {
+                            Rectangle r = (Rectangle) currentStroke;
+                            drawCanvas.drawRect(r.getX(), r.getY(), r.getWidth(), r.getHeight(), drawPaint);
+                        }
                         setErase(false);
                         // TODO: Remove stroke from arraylist as well.
                         Log.d("pointers", "HOLDING!!!!");
@@ -271,7 +279,15 @@ public class CanvasView extends View{
                     currTouchMode = TouchMode.SingleFingerDraw;
                     drawPaint.setStrokeWidth(brushSize);
                     if (currentStroke != null) {
-                        drawCanvas.drawPath(((DrawPath)currentStroke).getDrawPath(), drawPaint);
+                        if (currentStroke instanceof  DrawPath) {
+                            drawCanvas.drawPath(((DrawPath) currentStroke).getDrawPath(), drawPaint);
+                        } else if (currentStroke instanceof Circle) {
+                            Circle c = (Circle) currentStroke;
+                            drawCanvas.drawCircle(c.getX(),c.getY(),c.getRadius(),drawPaint);
+                        } else if (currentStroke instanceof Rectangle) {
+                            Rectangle r = (Rectangle) currentStroke;
+                            drawCanvas.drawRect(r.getX(),r.getY(),r.getWidth(),r.getHeight(), drawPaint);
+                        }
                         strokes.add(currentStroke);
                     }
                     currentStroke = null;
