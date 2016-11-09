@@ -287,7 +287,6 @@ public class CanvasView extends View{
                                 }
                             }
                         }
-                        //TODO: clone shape
                     } else if (currGestureMode == GestureMode.Rotate) {
                         if (event.getPointerCount() == 4) {
                             float ratateDegree = rotation(event);

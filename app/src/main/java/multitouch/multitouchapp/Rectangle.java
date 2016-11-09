@@ -61,13 +61,18 @@ public class Rectangle extends DrawShape{
     }
 
     @Override
-    public void move(float x, float y) {
+    public void move(float x1, float y1) {
+        x = x1;
+        y = y1;
 
 
     }
 
     @Override
-    public void startMove(float x, float y) {
+    public void startMove(float x1, float y1) {
+        x = x1;
+        y = y1;
+
 
     }
 
