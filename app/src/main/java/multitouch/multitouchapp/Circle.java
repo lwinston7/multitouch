@@ -12,6 +12,8 @@ public class Circle extends DrawShape {
     private float radius;
     private float x;
     private float y;
+    private static final float TOLERANCE = 5;
+
 
     @Override
     public void update(float x, float y) {
@@ -20,6 +22,9 @@ public class Circle extends DrawShape {
 
     public float getRadius() {
         return radius;
+    }
+    public void updateWithScale(float scaleIndex) {
+        radius = radius * scaleIndex;
     }
 
     public float getX() {
@@ -34,7 +39,7 @@ public class Circle extends DrawShape {
     public void startStroke(float x, float y) {
         this.x = x;
         this.y = y;
-        radius = 0;
+        radius = 10;
     }
 
     @Override
@@ -44,7 +49,18 @@ public class Circle extends DrawShape {
 
     @Override
     public boolean containsTap(float x1, float y1, float x2, float y2) {
-        return false;
+        float midx = (x1 + x2) / 2f;
+        float midy = (y1 + y2) / 2f;
+        if (midx < (x - radius - TOLERANCE)) {
+            return false;
+        } else if (midx > (x + radius + TOLERANCE)) {
+            return false;
+        } else if (midy < (y - radius - TOLERANCE)) {
+            return false;
+        } else if (midy > (y + radius + TOLERANCE)) {
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -53,12 +69,15 @@ public class Circle extends DrawShape {
     }
 
     @Override
-    public void move(float x, float y) {
-
+    public void move(float x1, float y1) {
+        x = x1;
+        y = y1;
     }
 
     @Override
-    public void startMove(float x, float y) {
+    public void startMove(float x1, float y1) {
+        x = x1;
+        y = y1;
 
     }
 }

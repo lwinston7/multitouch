@@ -42,6 +42,8 @@ public class CanvasView extends View{
     private static final float TOLERANCE = 5;
     private boolean EAT_POINTER_INPUT = false;
     private int EAT_COUNT = 0;
+    private float prevScaleDist;
+    private float currScaleDist;
 
 
     private enum DrawMode {
@@ -122,7 +124,6 @@ public class CanvasView extends View{
     }
 
     private void startTouch(float x, float y) {
-
         switch (currentDrawMode) {
             case Line:
                 currentStroke = new DrawPath();
@@ -232,8 +233,8 @@ public class CanvasView extends View{
                         //java.lang.IllegalArgumentException: pointerIndex out of range
                         if (event.getPointerCount() >= 2) {
                             currentStroke = findNearestStroke(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
+                            currentStroke.startMove(x, y);
                         }
-                        currentStroke.startMove(x, y);
                         //drawPaint.setStrokeWidth(60);
                         setErase(true);
                         //java.lang.ClassCastException: multitouch.multitouchapp.Rectangle cannot be cast to multitouch.multitouchapp.DrawPath
@@ -242,14 +243,68 @@ public class CanvasView extends View{
                         // TODO: Remove stroke from arraylist as well.
                         Log.d("pointers", "HOLDING!!!!");
                     }
+
                     if (currGestureMode == GestureMode.Drag) {
-                        //TODO: drag shape
+                        if (event.getPointerCount() == 2) {
+                            float dx = (event.getX(0) + event.getX(1))/2;
+                            float dy = (event.getY(0) + event.getY(1))/2;
+                            Stroke tappedStroke = getTappedShape(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
+                            if (tappedStroke != null) {
+                                tappedStroke.startMove(dx, dy);
+                                if (tappedStroke instanceof Circle) {
+                                    Circle tappedCicle = (Circle) tappedStroke;
+                                    drawCanvas.drawCircle(tappedCicle.getX(), tappedCicle.getY(),
+                                            tappedCicle.getRadius(), drawPaint);
+                                } else if (tappedStroke instanceof Rectangle) {
+                                    Rectangle tappedR = (Rectangle) tappedStroke;
+                                    drawCanvas.drawRect(tappedR.getX(), tappedR.getY(),
+                                            tappedR.getWidth(), tappedR.getWidth(),drawPaint);
+                                }
+                            }
+                        }
                     } else if (currGestureMode == GestureMode.Clone) {
+                        if (event.getPointerCount() == 3 ) {
+                            float cloneX = event.getX(2);
+                            float cloneY = event.getY(2);
+                            //TODO: create same stroke
+                            Stroke tappedStroke = getTappedShape(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
+                            if (tappedStroke != null) {
+                                if (tappedStroke instanceof Circle) {
+                                    Circle tappedCircle = (Circle) tappedStroke;
+                                    Circle clonedCircle = tappedCircle;
+                                    clonedCircle.move(cloneX, cloneY);
+                                    strokes.add(clonedCircle);
+                                    drawCanvas.drawCircle(clonedCircle.getX(), clonedCircle.getY(), clonedCircle.getRadius(), drawPaint);
+                                    break;
+                                } else if (tappedStroke instanceof Rectangle) {
+                                    Rectangle tappedRect = (Rectangle) tappedStroke;
+                                    Rectangle clonedRect = tappedRect;
+                                    clonedRect.move(cloneX, cloneY);
+                                    strokes.add(clonedRect);
+                                    drawCanvas.drawRect(clonedRect.getX(), clonedRect.getY(),
+                                            clonedRect.getWidth(),clonedRect.getHeight(),drawPaint);
+                                    break;
+                                }
+                            }
+                        }
                         //TODO: clone shape
                     } else if (currGestureMode == GestureMode.Rotate) {
-                        //TODO: rotate shape
+                        if (event.getPointerCount() == 4) {
+                            float ratateDegree = rotation(event);
+                            //TODO: rotate shape
+                        }
+
                     } else if (currGestureMode == GestureMode.Scale) {
                         //TODO: scale shape
+                        currScaleDist = spacingScale(event);
+                        float scaleIndex = currScaleDist/prevScaleDist;
+                        if (currentStroke instanceof Circle) {
+                            ((Circle) currentStroke).updateWithScale(scaleIndex);
+                        } else if (currentStroke instanceof Rectangle) {
+                            float updatedH = ((Rectangle) currentStroke).getHeight() * scaleIndex;
+                            float updatedW = ((Rectangle) currentStroke).getWidth() * scaleIndex;
+                            currentStroke.update(updatedW, updatedH);
+                        }
                     }
 
 
@@ -304,6 +359,9 @@ public class CanvasView extends View{
                 }
                 if (event.getPointerCount() == 5) {
                     currGestureMode = GestureMode.Scale;
+                    prevScaleDist = spacingScale(event);
+                    //###
+
                     Log.d("pointers", "pointer down 5");
                 }
                 break;
@@ -392,6 +450,27 @@ public class CanvasView extends View{
         return (float) Math.toDegrees(radians);
     }
 
+    private float spacingScale(MotionEvent event) {
+        if (event.getPointerCount() >= 5) {
+            float x1 = event.getX(2);
+            float y1 = event.getY(2);
+            float x2 = event.getX(3);
+            float y2 = event.getY(3);
+            float x3 = event.getX(4);
+            float y3 = event.getY(4);
+            float offsetx1 = x1 - x2;
+            float offsety1 = y1 - y2;
+            float offsetx2 = x2 - x3;
+            float offsety2 = y2 - y3;
+            float offsetx3 = x3 - x1;
+            float offsety3 = y3 - y1;
+            float currDist = (float) Math.sqrt(offsetx1 * offsetx1 + offsety1 * offsety1 +
+            offsetx2 * offsetx2 + offsety2 * offsety2 + offsetx3 * offsetx3 + offsety3 * offsety3);
+            return currDist;
+        }
+        return (float)1.0;
+    }
+
     //determine the space between the first two fingers
     private float spacingOneTwo(MotionEvent event) {
         float x = event.getX(0) - event.getY(1);
@@ -399,12 +478,20 @@ public class CanvasView extends View{
         return (float) Math.sqrt(x * x + y * y);
     }
 
+
     //determine the midPoint of the the 3, 4 fingers
     private void midPointThirdFlour(PointF point, MotionEvent event) {
         float x = event.getX(2) + event.getY(3);
         float y = event.getY(2) + event.getY(3);
         point.set(x/2, y/2);
     }
+
+    private void midPointOneTwo(PointF point, MotionEvent event) {
+        float x = event.getX(0) + event.getY(1);
+        float y = event.getY(0) + event.getY(1);
+        point.set(x/2, y/2);
+    }
+
 
 
     public void EatInput() {
@@ -432,6 +519,16 @@ public class CanvasView extends View{
         } else {
             return null;
         }
+    }
+
+    public Stroke getTappedShape(float x1, float y1, float x2, float y2) {
+        for (int i = strokes.size() - 1; i >= 0; i--) {
+            Stroke thisStroke = strokes.get(i);
+            if (thisStroke.containsTap(x1, y1, x2, y2)) {
+                return thisStroke;
+            };
+        }
+        return null;
     }
 
     private class DrawingGestureListener implements GestureDetector.OnGestureListener {
