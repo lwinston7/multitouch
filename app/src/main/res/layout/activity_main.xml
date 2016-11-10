@@ -43,14 +43,6 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
-                    <Button
-                        android:layout_width="70dp"
-                        android:layout_height="40dp"
-                        android:layout_gravity="bottom|center"
-                        android:layout_weight="1"
-                        android:onClick="Open"
-                        android:text="Open" />
-
                     <ImageButton
                         android:id="@+id/buttonNew"
                         android:layout_width="50dp"
