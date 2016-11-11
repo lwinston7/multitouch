@@ -176,10 +176,10 @@ public class CanvasView extends View{
     }
 
     public void clearCanvas() {
-        if (drawPath != null) {
-            drawPath.reset();
-        }
-        drawCanvas.drawColor(Color.WHITE);
+        drawPath = null;
+        currentStroke = null;
+        currentDrawMode = DrawMode.Line;
+        setErase(false);
         strokes = new ArrayList<Stroke>();
         invalidate();
     }
@@ -428,7 +428,6 @@ public class CanvasView extends View{
             drawPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
             drawPaint.setColor(bgColor);
         } else {
-            //TODO: Change
             currentDrawMode = prevDrawMode;
             drawPaint.setXfermode(null);
             drawPaint.setColor(paintColor);
