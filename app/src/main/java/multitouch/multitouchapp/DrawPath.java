@@ -80,12 +80,13 @@ public class DrawPath extends Stroke {
         moveY = y;
     }
 
+    @Override
     public void startMove(float x, float y) {
         moveX = x;
         moveY = y;
     }
 
-    private double distance(Point start, Point end) {
+    protected double distance(Point start, Point end) {
         return Math.sqrt(Math.pow(start.x - end.x, 2) + Math.pow(start.y - end.y, 2));
     }
 }

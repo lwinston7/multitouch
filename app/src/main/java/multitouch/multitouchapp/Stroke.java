@@ -1,5 +1,7 @@
 package multitouch.multitouchapp;
 
+import android.graphics.Point;
+
 /**
  * Any type of object that can be drawn on the screen: a path or a shape.
  * Created by Lauren on 11/6/2016.

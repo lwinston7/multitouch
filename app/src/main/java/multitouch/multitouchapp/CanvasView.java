@@ -246,7 +246,7 @@ public class CanvasView extends View{
                             float dy = (event.getY(0) + event.getY(1))/2;
                             Stroke tappedStroke = getTappedShape(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
                             if (tappedStroke != null) {
-                                tappedStroke.startMove(dx, dy);
+                                tappedStroke.move(dx, dy);
                                 if (tappedStroke instanceof Circle) {
                                     Circle tappedCircle = (Circle) tappedStroke;
                                     drawCanvas.drawCircle(tappedCircle.getX(), tappedCircle.getY(),
