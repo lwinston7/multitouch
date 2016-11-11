@@ -20,6 +20,7 @@ import android.graphics.PorterDuffXfermode;
 import android.util.TypedValue;
 import java.util.ArrayList;
 import android.graphics.PointF;
+import android.util.Log;
 
 import static android.view.ViewConfiguration.getLongPressTimeout;
 
@@ -216,7 +217,6 @@ public class CanvasView extends View{
         //Draw normally
         float x = event.getX();
         float y = event.getY();
-
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 startTouch(x, y);
@@ -226,100 +226,110 @@ public class CanvasView extends View{
                 if (currTouchMode == TouchMode.TwoFingerWait) {
                     if (System.currentTimeMillis() - mLastFingerDown > getLongPressTimeout()) {
                         currTouchMode = TouchMode.Hold;
-                        currentStroke = popNearestStroke(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
+                        //java.lang.IllegalArgumentException: pointerIndex out of range
+                        if (event.getPointerCount() >= 2) {
+                            currentStroke = popNearestStroke(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
+                        }
                         if (currentStroke != null) {
                             currentStroke.startMove(x, y);
                             invalidate();
                         }
                     }
-
-                    if (currGestureMode == GestureMode.Drag) {
-                        if (event.getPointerCount() == 2) {
-                            float dx = (event.getX(0) + event.getX(1))/2;
-                            float dy = (event.getY(0) + event.getY(1))/2;
-                            Stroke tappedStroke = getTappedShape(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
-                            if (tappedStroke != null) {
-                                tappedStroke.move(dx, dy);
-                                if (tappedStroke instanceof Circle) {
-                                    Circle tappedCircle = (Circle) tappedStroke;
-                                    drawCanvas.drawCircle(tappedCircle.getX(), tappedCircle.getY(),
-                                            tappedCircle.getRadius(), drawPaint);
-                                    break;
-                                } else if (tappedStroke instanceof Rectangle) {
-                                    Rectangle tappedR = (Rectangle) tappedStroke;
-                                    drawCanvas.drawRect(tappedR.getRect(),drawPaint);
-                                    break;
-                                }
-                            }
-                        }
-                    } else if (currGestureMode == GestureMode.Clone) {
-                        if (event.getPointerCount() == 3 ) {
-                            float cloneX = event.getX(2);
-                            float cloneY = event.getY(2);
-
-                            Stroke tappedStroke = getTappedShape(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
-                            if (tappedStroke != null) {
-                                if (tappedStroke instanceof Circle) {
-                                    Circle tappedCircle = (Circle) tappedStroke;
-                                    Circle clonedCircle = tappedCircle;
-                                    clonedCircle.move(cloneX, cloneY);
-                                    strokes.add(clonedCircle);
-                                    drawCanvas.drawCircle(clonedCircle.getX(), clonedCircle.getY(), clonedCircle.getRadius(), drawPaint);
-                                    break;
-                                } else if (tappedStroke instanceof Rectangle) {
-                                    Rectangle tappedRect = (Rectangle) tappedStroke;
-                                    Rectangle clonedRect = tappedRect;
-                                    clonedRect.move(cloneX, cloneY);
-                                    strokes.add(clonedRect);
-                                    drawCanvas.drawRect(clonedRect.getRect(), drawPaint);
-                                    break;
-                                }
-                            }
-                        }
-                    } else if (currGestureMode == GestureMode.Rotate) {
-                        if (event.getPointerCount() == 4) {
-                            Stroke tappedStroke = getTappedShape(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
-                            if (tappedStroke != null) {
-                                float rotateDegree = rotation(event);
-                                if (tappedStroke instanceof Circle) {
-                                    Circle tappedCircle = (Circle) tappedStroke;
-                                    drawCanvas.save();
-                                    drawCanvas.rotate(rotateDegree);
-                                    drawCanvas.drawCircle(tappedCircle.getX(), tappedCircle.getY(),
-                                            tappedCircle.getRadius(),drawPaint);
-                                    drawCanvas.restore();
-                                    break;
-                                } else if (tappedStroke instanceof Rectangle) {
-                                    Rectangle tappedRect = (Rectangle) tappedStroke;
-                                    drawCanvas.save();
-                                    drawCanvas.rotate(rotateDegree);
-                                    drawCanvas.drawRect(tappedRect.getRect(), drawPaint);
-                                    drawCanvas.restore();
-                                }
-
-                            }
-                        }
-
-                    } else if (currGestureMode == GestureMode.Scale) {
-                        //scale shape
-                        currScaleDist = spacingScale(event);
-                        float scaleIndex = currScaleDist/prevScaleDist;
-                        if (currentStroke instanceof Circle) {
-                            ((Circle) currentStroke).updateWithScale(scaleIndex);
-                        } else if (currentStroke instanceof Rectangle) {
-                            float updatedH = ((Rectangle) currentStroke).getRect().height() * scaleIndex;
-                            float updatedW = ((Rectangle) currentStroke).getRect().width() * scaleIndex;
-                            //TODO: This isn't going to work. Call an update method that updates the height
-                            // and width.
-                            currentStroke.update(updatedW, updatedH);
-                        }
-                    }
-
                 } else if (currTouchMode == TouchMode.SingleFingerDraw){
                     moveTouch(x, y);
                 } else if (currTouchMode == TouchMode.Hold) {
-                    currentStroke.move(x, y);
+                    Log.d("inside move hold 1", currGestureMode.toString());
+                    //add a condition here
+                    if (currentStroke != null && currGestureMode == GestureMode.Drag) {
+                        currentStroke.move(x, y);
+                    }
+                    Log.d(currTouchMode.toString(),currGestureMode.toString());
                     invalidate();
+                }
+                if (currGestureMode == GestureMode.Drag) {
+                    Log.d("inside move 2 drag", currGestureMode.toString());
+                    if (event.getPointerCount() == 2) {
+                        float dx = (event.getX(0) + event.getX(1))/2;
+                        float dy = (event.getY(0) + event.getY(1))/2;
+                        Stroke tappedStroke = getTappedShape(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
+                        if (tappedStroke != null) {
+                            tappedStroke.move(dx, dy);
+                            if (tappedStroke instanceof Circle) {
+                                Circle tappedCircle = (Circle) tappedStroke;
+                                drawCanvas.drawCircle(tappedCircle.getX(), tappedCircle.getY(),
+                                        tappedCircle.getRadius(), drawPaint);
+                                break;
+                            } else if (tappedStroke instanceof Rectangle) {
+                                Rectangle tappedR = (Rectangle) tappedStroke;
+                                drawCanvas.drawRect(tappedR.getRect(),drawPaint);
+                                break;
+                            }
+                        }
+                    }
+                } else if (currGestureMode == GestureMode.Clone) {
+                    Log.d("inside move 3 clone", currGestureMode.toString());
+                    if (event.getPointerCount() == 3 ) {
+                        float cloneX = event.getX(2);
+                        float cloneY = event.getY(2);
+
+                        Stroke tappedStroke = getTappedShape(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
+                        if (tappedStroke != null) {
+                            if (tappedStroke instanceof Circle) {
+                                Circle tappedCircle = (Circle) tappedStroke;
+                                Circle clonedCircle = tappedCircle;
+                                clonedCircle.move(cloneX, cloneY);
+                                strokes.add(clonedCircle);
+                                drawCanvas.drawCircle(clonedCircle.getX(), clonedCircle.getY(), clonedCircle.getRadius(), drawPaint);
+                                break;
+                            } else if (tappedStroke instanceof Rectangle) {
+                                Rectangle tappedRect = (Rectangle) tappedStroke;
+                                Rectangle clonedRect = tappedRect;
+                                clonedRect.move(cloneX, cloneY);
+                                strokes.add(clonedRect);
+                                drawCanvas.drawRect(clonedRect.getRect(), drawPaint);
+                                break;
+                            }
+                        }
+                    }
+                } else if (currGestureMode == GestureMode.Rotate) {
+                    Log.d("inside move 3 rorate", currGestureMode.toString());
+                    if (event.getPointerCount() == 4) {
+                        Stroke tappedStroke = getTappedShape(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
+                        if (tappedStroke != null) {
+                            float rotateDegree = rotation(event);
+                            if (tappedStroke instanceof Circle) {
+                                Circle tappedCircle = (Circle) tappedStroke;
+                                drawCanvas.save();
+                                drawCanvas.rotate(rotateDegree);
+                                drawCanvas.drawCircle(tappedCircle.getX(), tappedCircle.getY(),
+                                        tappedCircle.getRadius(),drawPaint);
+                                drawCanvas.restore();
+                                break;
+                            } else if (tappedStroke instanceof Rectangle) {
+                                Rectangle tappedRect = (Rectangle) tappedStroke;
+                                drawCanvas.save();
+                                drawCanvas.rotate(rotateDegree);
+                                drawCanvas.drawRect(tappedRect.getRect(), drawPaint);
+                                drawCanvas.restore();
+                            }
+
+                        }
+                    }
+
+                } else if (currGestureMode == GestureMode.Scale) {
+                    Log.d("inside move 4 scale", currGestureMode.toString());
+                    //scale shape
+                    currScaleDist = spacingScale(event);
+                    float scaleIndex = currScaleDist/prevScaleDist;
+                    if (currentStroke instanceof Circle) {
+                        ((Circle) currentStroke).updateWithScale(scaleIndex);
+                    } else if (currentStroke instanceof Rectangle) {
+                        float updatedH = ((Rectangle) currentStroke).getRect().height() * scaleIndex;
+                        float updatedW = ((Rectangle) currentStroke).getRect().width() * scaleIndex;
+                        //TODO: This isn't going to work. Call an update method that updates the height
+                        // and width.
+                        ((Rectangle)currentStroke).updateHeightWidth(updatedH, updatedW);
+                    }
                 }
                 invalidate();
                 break;

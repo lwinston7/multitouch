@@ -85,4 +85,12 @@ public class Rectangle extends DrawShape{
     public Rect getRect() {
         return rect;
     }
+
+    public void updateHeightWidth(float h, float w) {
+        float right = left + w;
+        float bottom = top + h;
+        // TODO: Adjust for negative numbers.
+        rect.set(left, top, (int) right,(int) bottom);
+    }
+
 }
