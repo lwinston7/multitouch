@@ -189,7 +189,6 @@ public class CanvasView extends View{
             upPath(x, y);
         } else if (currentStroke != null){
             currentStroke.finishStroke(x, y);
-            Log.d("UpTOUCH", currentDrawMode.toString());
             switch (currentDrawMode) {
                 case Line:
                     drawCanvas.drawPath(((DrawPath) currentStroke).getDrawPath(), drawPaint);
@@ -225,12 +224,10 @@ public class CanvasView extends View{
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 startTouch(x, y);
-                Log.d("1 pointer", "down");
                 invalidate();
                 break;
             case MotionEvent.ACTION_MOVE:
                 if (currTouchMode == TouchMode.TwoFingerWait) {
-                    Log.d("pointers", "multiple pointer move");
                     if (System.currentTimeMillis() - mLastFingerDown > getLongPressTimeout()) {
                         currTouchMode = TouchMode.Hold;
                         //java.lang.IllegalArgumentException: pointerIndex out of range
@@ -252,7 +249,6 @@ public class CanvasView extends View{
                         }
                         setErase(false);
                         // TODO: Remove stroke from arraylist as well.
-                        Log.d("pointers", "HOLDING!!!!");
                     }
 
                     if (currGestureMode == GestureMode.Drag) {
@@ -340,9 +336,7 @@ public class CanvasView extends View{
 
                 } else if (currTouchMode == TouchMode.SingleFingerDraw){
                     moveTouch(x, y);
-                    Log.d("1 pointer", "move");
                 } else if (currTouchMode == TouchMode.Hold) {
-                    Log.d("pointers", "MOVING");
                     currentStroke.move(x, y);
                     invalidate();
                 }
@@ -351,7 +345,6 @@ public class CanvasView extends View{
             case MotionEvent.ACTION_UP:
                 if (currTouchMode == TouchMode.SingleFingerDraw) {
                     upTouch(x, y);
-                    Log.d("1 pointer", "up");
                 } else {
                     currTouchMode = TouchMode.SingleFingerDraw;
                     drawPaint.setStrokeWidth(brushSize);
@@ -373,7 +366,6 @@ public class CanvasView extends View{
                 break;
             case MotionEvent.ACTION_OUTSIDE:
                 upTouch(x, y);
-                Log.d("1 pointer", "pointer outside");
                 invalidate();
                 break;
             case MotionEvent.ACTION_POINTER_DOWN:
@@ -381,33 +373,26 @@ public class CanvasView extends View{
                     currTouchMode = TouchMode.TwoFingerWait;
                     mLastFingerDown = System.currentTimeMillis();
                     currentStroke = null;
-                    Log.d("pointers", "pointer down tow fingerwait" );
                 }
                 if (event.getPointerCount() == 2) {
                     currGestureMode = GestureMode.Drag;
-                    Log.d("pointers", "pointer down 2");
                 }
                 if (event.getPointerCount() == 3) {
                     currGestureMode = GestureMode.Clone;
-                    Log.d("pointers", "pointer down 3");
                 }
                 if (event.getPointerCount() == 4) {
                     currGestureMode = GestureMode.Rotate;
-                    Log.d("pointers", "pointer down 4");
                 }
                 if (event.getPointerCount() == 5) {
                     currGestureMode = GestureMode.Scale;
                     prevScaleDist = spacingScale(event);
                     //###
 
-                    Log.d("pointers", "pointer down 5");
                 }
                 break;
             case MotionEvent.ACTION_POINTER_UP:
-                Log.d("pointers", "pointer up");
                 break;
             default:
-                Log.d("1 pointer", event.toString());
                 break;
         }
 
@@ -535,7 +520,6 @@ public class CanvasView extends View{
     public void EatInput() {
         EAT_POINTER_INPUT = true;
         EAT_COUNT++;
-        Log.d("pointer eat", "" + EAT_COUNT);
         currentStroke = null;
     }
 
@@ -552,7 +536,6 @@ public class CanvasView extends View{
         }
 
         if (nearestStrokeIndex > -1) {
-            Log.d("stroke", nearestStrokeIndex + "");
             return strokes.remove(nearestStrokeIndex);
         } else {
             return null;
