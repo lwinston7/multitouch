@@ -248,9 +248,9 @@ public class CanvasView extends View{
                             if (tappedStroke != null) {
                                 tappedStroke.startMove(dx, dy);
                                 if (tappedStroke instanceof Circle) {
-                                    Circle tappedCicle = (Circle) tappedStroke;
-                                    drawCanvas.drawCircle(tappedCicle.getX(), tappedCicle.getY(),
-                                            tappedCicle.getRadius(), drawPaint);
+                                    Circle tappedCircle = (Circle) tappedStroke;
+                                    drawCanvas.drawCircle(tappedCircle.getX(), tappedCircle.getY(),
+                                            tappedCircle.getRadius(), drawPaint);
                                     break;
                                 } else if (tappedStroke instanceof Rectangle) {
                                     Rectangle tappedR = (Rectangle) tappedStroke;

@@ -1,6 +1,7 @@
 package multitouch.multitouchapp;
 
 import android.graphics.Path;
+import android.graphics.PathMeasure;
 import android.graphics.Point;
 import android.util.Log;
 
@@ -12,12 +13,12 @@ import java.util.ArrayList;
 
 public class DrawPath extends Stroke {
     private Path drawPath;
-    private ArrayList<Point> points = new ArrayList<Point>();
     private float mX;
     private float mY;
     private static final float TOLERANCE = 5;
     private float moveX = 0;
     private float moveY = 0;
+    private final float SUBDIVIDE_THRESHOLD = .01f;
 
     @Override
     public void startStroke(float x, float y) {
@@ -25,7 +26,6 @@ public class DrawPath extends Stroke {
         drawPath.moveTo(x,y);
         mX = x;
         mY = y;
-        points.add(new Point((int) x, (int) y));
     }
 
     @Override
@@ -39,7 +39,6 @@ public class DrawPath extends Stroke {
             mY = y;
         }
 
-        points.add(new Point((int) x, (int) y));
     }
 
     @Override
@@ -60,11 +59,16 @@ public class DrawPath extends Stroke {
     public float distanceFromTap(float x1, float y1, float x2, float y2) {
         Point midpoint = new Point((int) (x1 + x2 / 2f), (int) (y1 + y2 / 2f));
         float minDistance = Integer.MAX_VALUE;
-        for (int i = 0; i < points.size(); i++) {
-            float distance = (float) distance(midpoint, points.get(i));
+        PathMeasure pm = new PathMeasure(drawPath, false);
+        float len = 0;
+        while (len < pm.getLength()) {
+            float[] coordinates = {0f, 0f};
+            pm.getPosTan(len, coordinates, null);
+            float distance = (float) distance(midpoint, new Point((int)coordinates[0], (int)coordinates[1]));
             if (distance < minDistance) {
                 minDistance = distance;
             }
+            len += pm.getLength() * SUBDIVIDE_THRESHOLD;
         }
         return minDistance;
     }
