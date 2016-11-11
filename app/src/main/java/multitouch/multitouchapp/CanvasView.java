@@ -5,7 +5,6 @@ package multitouch.multitouchapp;
  */
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -13,7 +12,6 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -31,7 +29,7 @@ public class CanvasView extends View{
     private Canvas drawCanvas;
     private ArrayList<Stroke> strokes = new ArrayList<Stroke>();
     private Stroke currentStroke;
-    private Path drawPath;
+    private Path erasePath;
     private Paint canvasPaint;
     private Paint drawPaint;
     Context context;
@@ -147,8 +145,8 @@ public class CanvasView extends View{
     }
 
     private void startPath(float x, float y) {
-        drawPath = new Path();
-        drawPath.moveTo(x,y);
+        erasePath = new Path();
+        erasePath.moveTo(x,y);
         mX = x;
         mY = y;
     }
@@ -156,8 +154,8 @@ public class CanvasView extends View{
     private void moveTouch(float x, float y) {
         if (currentDrawMode == DrawMode.Erase) {
             movePath(x, y);
-            // TODO: Does drawPath need to be cleared every time?
-            drawCanvas.drawPath(drawPath, drawPaint);
+            // TODO: Does erasePath need to be cleared every time?
+            drawCanvas.drawPath(erasePath, drawPaint);
         }
         if (currentStroke != null) {
             currentStroke.update(x, y);
@@ -169,14 +167,14 @@ public class CanvasView extends View{
         float dy = Math.abs(y - mY);
 
         if (dx >= TOLERANCE || dy >= TOLERANCE) {
-            drawPath.quadTo(mX, mY, (x + mX) / 2, (y + mY) / 2);
+            erasePath.quadTo(mX, mY, (x + mX) / 2, (y + mY) / 2);
             mX = x;
             mY = y;
         }
     }
 
     public void clearCanvas() {
-        drawPath = null;
+        erasePath = null;
         currentStroke = null;
         currentDrawMode = DrawMode.Line;
         setErase(false);
@@ -211,8 +209,8 @@ public class CanvasView extends View{
 
     private void upPath(float x, float y) {
         movePath(x, y);
-        drawCanvas.drawPath(drawPath, drawPaint);
-        drawPath = null;
+        drawCanvas.drawPath(erasePath, drawPaint);
+        erasePath = null;
     }
 
     @Override
