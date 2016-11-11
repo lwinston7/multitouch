@@ -11,6 +11,7 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.drawable.ColorDrawable;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -179,6 +180,7 @@ public class CanvasView extends View{
         currentDrawMode = DrawMode.Line;
         setErase(false);
         strokes = new ArrayList<Stroke>();
+        resetCanvas();
         invalidate();
     }
 
@@ -228,25 +230,14 @@ public class CanvasView extends View{
                 if (currTouchMode == TouchMode.TwoFingerWait) {
                     if (System.currentTimeMillis() - mLastFingerDown > getLongPressTimeout()) {
                         currTouchMode = TouchMode.Hold;
-                        //java.lang.IllegalArgumentException: pointerIndex out of range
+                        // In case multiple pointers get added.
                         if (event.getPointerCount() >= 2) {
-                            currentStroke = findNearestStroke(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
-                            currentStroke.startMove(x, y);
+                            currentStroke = popNearestStroke(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
+                            if (currentStroke != null) {
+                                currentStroke.startMove(x, y);
+                                invalidate();
+                            }
                         }
-                        //drawPaint.setStrokeWidth(60);
-                        setErase(true);
-                        //java.lang.ClassCastException: multitouch.multitouchapp.Rectangle cannot be cast to multitouch.multitouchapp.DrawPath
-                        if (currentStroke instanceof DrawPath) {
-                            drawCanvas.drawPath(((DrawPath) currentStroke).getDrawPath(), drawPaint);
-                        } else if (currentStroke instanceof Circle) {
-                            Circle c = (Circle) currentStroke;
-                            drawCanvas.drawCircle(c.getX(),c.getY(),c.getRadius(), drawPaint);
-                        } else if (currentStroke instanceof Rectangle) {
-                            Rectangle r = (Rectangle) currentStroke;
-                            drawCanvas.drawRect(r.getX(), r.getY(), r.getWidth(), r.getHeight(), drawPaint);
-                        }
-                        setErase(false);
-                        // TODO: Remove stroke from arraylist as well.
                     }
 
                     if (currGestureMode == GestureMode.Drag) {
@@ -520,7 +511,7 @@ public class CanvasView extends View{
         currentStroke = null;
     }
 
-    public Stroke findNearestStroke(float x1, float y1, float x2, float y2) {
+    private int findNearestStrokeIndex(float x1, float y1, float x2, float y2) {
         float nearestDistance = Integer.MAX_VALUE;
         int nearestStrokeIndex = -1;
         // Give priority to strokes drawn most recently.
@@ -532,10 +523,36 @@ public class CanvasView extends View{
             };
         }
 
-        if (nearestStrokeIndex > -1) {
-            return strokes.remove(nearestStrokeIndex);
-        } else {
+        return nearestStrokeIndex;
+    }
+
+    private Stroke popNearestStroke(float x1, float y1, float x2, float y2) {
+        int index = findNearestStrokeIndex(x1, y1, x2, y2);
+        if (index < 0) {
             return null;
+        }
+
+        Stroke str = strokes.remove(index);
+        resetCanvas();
+        return str;
+    }
+
+    private void resetCanvas() {
+        drawCanvas.drawColor(bgColor);
+        for (Stroke str : strokes) {
+            drawStrokeOnCanvas(str);
+        }
+    }
+
+    private void drawStrokeOnCanvas(Stroke str) {
+        if (str instanceof DrawPath) {
+            drawCanvas.drawPath(((DrawPath) str).getDrawPath(), drawPaint);
+        } else if (str instanceof Circle) {
+            Circle c = (Circle) str;
+            drawCanvas.drawCircle(c.getX(), c.getY(), c.getRadius(), drawPaint);
+        } else if (str instanceof Rectangle) {
+            Rectangle r = (Rectangle) str;
+            drawCanvas.drawRect(r.getX(), r.getY(), r.getWidth(), r.getHeight(), drawPaint);
         }
     }
 
