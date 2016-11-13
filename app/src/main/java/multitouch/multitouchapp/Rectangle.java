@@ -38,13 +38,15 @@ public class Rectangle extends DrawShape{
         float height = rect.height();
         float midx = rect.centerX();
         float midy = rect.centerY();
-        if (midx > (left + width + TOLERANCE)) {
+        float midTouchX = (x1 + x2) / 2;
+        float midTouchY = (y1 + y2) / 2;
+        if (midTouchX > (left + width + TOLERANCE)) {
             return false;
-        } else if (midx < (left - TOLERANCE)) {
+        } else if (midTouchX < (left - TOLERANCE)) {
             return false;
-        } else if (midy > (rect.bottom + height + TOLERANCE)) {
+        } else if (midTouchY > (rect.bottom + TOLERANCE)) {
             return false;
-        }else if (midy < (rect.bottom - TOLERANCE)) {
+        }else if (midTouchY < (rect.top - TOLERANCE)) {
             return false;
         }
         return true;

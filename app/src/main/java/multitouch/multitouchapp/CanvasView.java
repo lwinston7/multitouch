@@ -44,6 +44,10 @@ public class CanvasView extends View{
     private int EAT_COUNT = 0;
     private float prevScaleDist;
     private float currScaleDist;
+    private Stroke tappedStroke;
+    private Circle clonedCircle;
+    private Rectangle clonedRect;
+
 
     private enum DrawMode {
         Line,
@@ -246,23 +250,29 @@ public class CanvasView extends View{
                     Log.d(currTouchMode.toString(),currGestureMode.toString());
                     invalidate();
                 }
-                if (currGestureMode == GestureMode.Drag) {
+                if (event.getPointerCount() >= 2) {
+                    tappedStroke = getTappedShape(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
+                    if (tappedStroke != null) {
+                        Log.d("inside Hold Touch Mode", tappedStroke.toString());
+                    }
+                }
+                if (false && currGestureMode == GestureMode.Drag) {
                     Log.d("inside move 2 drag", currGestureMode.toString());
                     if (event.getPointerCount() == 2) {
                         float dx = (event.getX(0) + event.getX(1))/2;
                         float dy = (event.getY(0) + event.getY(1))/2;
-                        Stroke tappedStroke = getTappedShape(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
+                        tappedStroke = getTappedShape(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
                         if (tappedStroke != null) {
                             tappedStroke.move(dx, dy);
                             if (tappedStroke instanceof Circle) {
                                 Circle tappedCircle = (Circle) tappedStroke;
                                 drawCanvas.drawCircle(tappedCircle.getX(), tappedCircle.getY(),
                                         tappedCircle.getRadius(), drawPaint);
-                                break;
+                                invalidate();
                             } else if (tappedStroke instanceof Rectangle) {
                                 Rectangle tappedR = (Rectangle) tappedStroke;
                                 drawCanvas.drawRect(tappedR.getRect(),drawPaint);
-                                break;
+                                invalidate();
                             }
                         }
                     }
@@ -271,30 +281,27 @@ public class CanvasView extends View{
                     if (event.getPointerCount() == 3 ) {
                         float cloneX = event.getX(2);
                         float cloneY = event.getY(2);
-
-                        Stroke tappedStroke = getTappedShape(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
+                        tappedStroke = getTappedShape(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
                         if (tappedStroke != null) {
                             if (tappedStroke instanceof Circle) {
                                 Circle tappedCircle = (Circle) tappedStroke;
-                                Circle clonedCircle = tappedCircle;
-                                clonedCircle.move(cloneX, cloneY);
-                                strokes.add(clonedCircle);
+                                clonedCircle = tappedCircle;
                                 drawCanvas.drawCircle(clonedCircle.getX(), clonedCircle.getY(), clonedCircle.getRadius(), drawPaint);
-                                break;
+                                clonedCircle.move(cloneX, cloneY);
+                                invalidate();
                             } else if (tappedStroke instanceof Rectangle) {
                                 Rectangle tappedRect = (Rectangle) tappedStroke;
-                                Rectangle clonedRect = tappedRect;
-                                clonedRect.move(cloneX, cloneY);
-                                strokes.add(clonedRect);
+                                clonedRect = tappedRect;
                                 drawCanvas.drawRect(clonedRect.getRect(), drawPaint);
-                                break;
+                                clonedRect.move(cloneX, cloneY);
+                                invalidate();
                             }
                         }
                     }
                 } else if (currGestureMode == GestureMode.Rotate) {
                     Log.d("inside move 3 rorate", currGestureMode.toString());
                     if (event.getPointerCount() == 4) {
-                        Stroke tappedStroke = getTappedShape(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
+                        tappedStroke = getTappedShape(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
                         if (tappedStroke != null) {
                             float rotateDegree = rotation(event);
                             if (tappedStroke instanceof Circle) {
@@ -382,6 +389,22 @@ public class CanvasView extends View{
                 }
                 break;
             case MotionEvent.ACTION_POINTER_UP:
+                if (currGestureMode == GestureMode.Clone) {
+                    Log.d("action up", "inside clone");
+                    if (clonedCircle != null) {
+                        drawCanvas.drawCircle(clonedCircle.getX(),clonedCircle.getY(),clonedCircle.getRadius(),drawPaint);
+                        strokes.add(clonedCircle);
+                        clonedCircle = null;
+                    } else if (clonedRect != null) {
+                        drawCanvas.drawRect(clonedRect.getRect(), drawPaint);
+                        strokes.add(clonedRect);
+                        clonedRect = null;
+                    }
+                    invalidate();
+                    break;
+                }
+
+
                 break;
             default:
                 break;
@@ -562,6 +585,7 @@ public class CanvasView extends View{
         for (int i = strokes.size() - 1; i >= 0; i--) {
             Stroke thisStroke = strokes.get(i);
             if (thisStroke.containsTap(x1, y1, x2, y2)) {
+                Log.d("inside getTapped",thisStroke.toString());
                 return thisStroke;
             };
         }
