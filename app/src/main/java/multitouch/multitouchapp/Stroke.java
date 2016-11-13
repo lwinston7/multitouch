@@ -15,4 +15,8 @@ public abstract class Stroke {
     public abstract float distanceFromTap(float x1, float y1, float x2, float y2);
     public abstract void move(float x, float y);
     public abstract void startMove(float x, float y);
+
+    protected double distance(Point start, Point end) {
+        return Math.sqrt(Math.pow(start.x - end.x, 2) + Math.pow(start.y - end.y, 2));
+    }
 }

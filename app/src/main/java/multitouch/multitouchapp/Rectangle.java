@@ -55,18 +55,36 @@ public class Rectangle extends DrawShape{
     @Override
     public float distanceFromTap(float x1, float y1, float x2, float y2) {
         if (containsTap(x1, y1, x2, y2)) {
-            Log.d("test", "contains tap");
             return 0;
         } else {
             Point midpoint = new Point((int) (x1 + x2 / 2f), (int) (y1 + y2 / 2f));
-            return distance(midpoint);
+            return (float) distance(midpoint);
         }
     }
 
-    private float distance(Point pt) {
-        float dx = Math.max(Math.abs(pt.x - rect.centerX()) - rect.width() / 2, 0);
-        float dy = Math.max(Math.abs(pt.y - rect.centerY()) - rect.height()/ 2, 0);
-        return dx * dx + dy * dy;
+    private double distance(Point pt) {
+        double distance = Integer.MAX_VALUE;
+        if (pt.x < rect.left) {
+            if (pt.y > rect.bottom) {
+                distance = distance(pt, new Point(rect.left, rect.bottom));
+            } else if (pt.y < rect.top) {
+                distance = distance(pt, new Point(rect.left, rect.top));
+            } else {
+                distance = rect.left - pt.x;
+            }
+        } else if (pt.x > rect.right) {
+            if (pt.y > rect.bottom) {
+                distance = distance(pt, new Point(rect.right, rect.bottom));
+            } else if (pt.y < rect.top){
+                distance = distance(pt, new Point(rect.right, rect.top));
+            } else {
+                distance = pt.x - rect.right;
+            }
+        } else {
+            distance = Math.min(rect.top - pt.y, pt.y - rect.bottom);
+        }
+
+        return Math.abs(distance);
     }
 
     @Override
