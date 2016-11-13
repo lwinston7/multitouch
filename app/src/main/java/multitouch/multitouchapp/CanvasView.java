@@ -178,8 +178,9 @@ public class CanvasView extends View{
     public void clearCanvas() {
         erasePath = null;
         currentStroke = null;
-        currentDrawMode = DrawMode.Line;
-        setErase(false);
+        if (currentDrawMode == DrawMode.Erase) {
+            setErase(false);
+        }
         strokes = new ArrayList<Stroke>();
         resetCanvas();
         invalidate();
