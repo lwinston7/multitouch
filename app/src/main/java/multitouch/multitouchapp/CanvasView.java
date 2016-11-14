@@ -183,6 +183,8 @@ public class CanvasView extends View{
 
     public void clearCanvas() {
         erasePath = null;
+        mScrollX = 0;
+        mScrollY = 0;
         currentStroke = null;
         if (currentDrawMode == DrawMode.Erase) {
             setErase(false);
