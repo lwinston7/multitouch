@@ -115,8 +115,9 @@ public class CanvasView extends View{
     public void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        canvas.drawBitmap(canvasBitmap, mScrollX, mScrollY, canvasPaint);
+        canvas.drawBitmap(canvasBitmap, mScrollX * -1, mScrollY * -1, canvasPaint);
 
+        //TODO: Offset by mScrollX and mScrollY if needed.
             if (currentStroke != null && currentDrawMode != DrawMode.Erase) {
                 if (currentStroke instanceof DrawPath) {
                     canvas.drawPath(((DrawPath) currentStroke).getDrawPath(), drawPaint);
@@ -243,6 +244,8 @@ public class CanvasView extends View{
                             currTouchMode = TouchMode.Hold;
                             currentStroke.startMove(x, y);
                             invalidate();
+                        } else {
+                            mLastFingerDown = System.currentTimeMillis();
                         }
                     }
                 } else if (currTouchMode == TouchMode.SingleFingerDraw){
@@ -613,11 +616,10 @@ public class CanvasView extends View{
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
             if (currTouchMode == TouchMode.TwoFingerWait
                     && e2.getPointerCount() == 2) {
-            /*    Log.d("scroll", currTouchMode + "; " + e2.getPointerCount() + "");
                 // Clamp values between 0 -> width / height.
                 mScrollX = Math.min(Math.max(mScrollX + distanceX, 0), width - getWidth());
                 mScrollY = Math.min(Math.max(mScrollY + distanceY, 0), height - getHeight());
-                invalidate();*/
+                invalidate();
                 return true;
             } else {
                 return false;
