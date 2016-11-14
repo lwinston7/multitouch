@@ -26,6 +26,7 @@ import static android.view.ViewConfiguration.getLongPressTimeout;
 
 public class CanvasView extends View{
 
+    private final int MAXIMUM_DRAG_DISTANCE = 300;
     private Bitmap canvasBitmap;
     private Canvas drawCanvas;
     private ArrayList<Stroke> strokes = new ArrayList<Stroke>();
@@ -40,14 +41,16 @@ public class CanvasView extends View{
     private int bgColor = Color.WHITE;
     private MultitouchGestureDetector mGestureDetector;
     private static final float TOLERANCE = 5;
-    private boolean EAT_POINTER_INPUT = false;
-    private int EAT_COUNT = 0;
     private float prevScaleDist;
     private float currScaleDist;
     private Stroke tappedStroke;
     private Circle clonedCircle;
     private Rectangle clonedRect;
 
+    private float mScrollX = 0;
+    private float mScrollY = 0;
+
+    private int width, height;
 
     private enum DrawMode {
         Line,
@@ -102,7 +105,9 @@ public class CanvasView extends View{
     @Override
     public void onSizeChanged(int w,int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        canvasBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        width = w * 2;
+        height = h * 2;
+        canvasBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         drawCanvas = new Canvas(canvasBitmap);
     }
 
@@ -110,7 +115,7 @@ public class CanvasView extends View{
     public void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        canvas.drawBitmap(canvasBitmap, 0, 0, canvasPaint);
+        canvas.drawBitmap(canvasBitmap, mScrollX, mScrollY, canvasPaint);
 
             if (currentStroke != null && currentDrawMode != DrawMode.Erase) {
                 if (currentStroke instanceof DrawPath) {
@@ -230,12 +235,12 @@ public class CanvasView extends View{
             case MotionEvent.ACTION_MOVE:
                 if (currTouchMode == TouchMode.TwoFingerWait) {
                     if (System.currentTimeMillis() - mLastFingerDown > getLongPressTimeout()) {
-                        currTouchMode = TouchMode.Hold;
                         //java.lang.IllegalArgumentException: pointerIndex out of range
                         if (event.getPointerCount() >= 2) {
                             currentStroke = popNearestStroke(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
                         }
                         if (currentStroke != null) {
+                            currTouchMode = TouchMode.Hold;
                             currentStroke.startMove(x, y);
                             invalidate();
                         }
@@ -411,6 +416,8 @@ public class CanvasView extends View{
                 break;
         }
 
+        mGestureDetector.onTouchEvent(event);
+
         return true;
     }
 
@@ -529,16 +536,8 @@ public class CanvasView extends View{
         point.set(x/2, y/2);
     }
 
-
-
-    public void EatInput() {
-        EAT_POINTER_INPUT = true;
-        EAT_COUNT++;
-        currentStroke = null;
-    }
-
     private int findNearestStrokeIndex(float x1, float y1, float x2, float y2) {
-        float nearestDistance = Integer.MAX_VALUE;
+        float nearestDistance = MAXIMUM_DRAG_DISTANCE;
         int nearestStrokeIndex = -1;
         // Give priority to strokes drawn most recently.
         for (int i = strokes.size() - 1; i >= 0; i--) {
@@ -612,7 +611,17 @@ public class CanvasView extends View{
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            return false;
+            if (currTouchMode == TouchMode.TwoFingerWait
+                    && e2.getPointerCount() == 2) {
+            /*    Log.d("scroll", currTouchMode + "; " + e2.getPointerCount() + "");
+                // Clamp values between 0 -> width / height.
+                mScrollX = Math.min(Math.max(mScrollX + distanceX, 0), width - getWidth());
+                mScrollY = Math.min(Math.max(mScrollY + distanceY, 0), height - getHeight());
+                invalidate();*/
+                return true;
+            } else {
+                return false;
+            }
         }
 
         @Override
