@@ -13,6 +13,9 @@ public abstract class Stroke {
     protected float mSize;
     protected Point p0Past, p1Past;
 
+    // The minimum change in distance between two fingers that will register a change.
+    protected float MINIMUM_DELTA_FINGER_DISTANCE = .5f;
+
     public void setColor(int c) {
         mColor = c;
     }

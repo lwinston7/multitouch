@@ -14,6 +14,7 @@ import java.util.ArrayList;
  */
 
 public class DrawPath extends Stroke {
+    // TODO: (Make ArrayList)
     private Path drawPath;
     private float mX;
     private float mY;
@@ -26,6 +27,8 @@ public class DrawPath extends Stroke {
     public void startStroke(float x, float y) {
         drawPath = new Path();
         drawPath.moveTo(x,y);
+        // drawPaths = new ArrayList<Path>();
+        //drawPaths.add(path;
         mX = x;
         mY = y;
     }
@@ -85,19 +88,18 @@ public class DrawPath extends Stroke {
     @Override
     public void move(Point p0, Point p1) {
         float currDistance = (float) distance(p0, p1);
-        float currXDistance = p0.x - p1.x;
-        float currYDistance = p0.y - p1.y;
         float pastDistance = (float) distance(this.p0Past, this.p1Past);
-        float pastXDistance = p0Past.x - p1Past.x;
-        float pastYDistance = p0Past.y - p1Past.y;
         float deltaDistance = currDistance - pastDistance;
 
         // If delta distance is significant, move with p0. Otherwise, move with the midpoint.
-        if (deltaDistance > 100) {
-            move(p0.x, p0.y);
-        } else {
-            move((p0.x + p1.x) / 2f, (p1.y + p0.y) / 2f);
+        if (Math.abs(deltaDistance) > MINIMUM_DELTA_FINGER_DISTANCE) {
+            // TODO: Add line manipulation here.
+            this.p0Past = p0;
+            this.p1Past = p1;
+            return;
         }
+
+        move((p0.x + p1.x) / 2f, (p1.y + p0.y) / 2f);
         this.p0Past = p0;
         this.p1Past = p1;
     }

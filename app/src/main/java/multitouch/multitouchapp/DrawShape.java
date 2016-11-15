@@ -26,7 +26,7 @@ public abstract class DrawShape extends Stroke {
             float currDistance = (float) distance(p0, p1);
             float pastDistance = (float) distance(this.p0Past, this.p1Past);
             float deltaDistance = currDistance - pastDistance;
-            if (Math.abs(deltaDistance) > .5) {
+            if (Math.abs(deltaDistance) > MINIMUM_DELTA_FINGER_DISTANCE) {
                 mIsFilled = true;
                 mTransparency = (int) Math.min(Math.max(mTransparency + deltaDistance, MINIMUM_TRANSPARENCY), 255);
                 p0Past = p0;
