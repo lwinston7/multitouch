@@ -16,7 +16,6 @@ public class Circle extends DrawShape {
     private float y;
     private static final float TOLERANCE = 5;
 
-
     @Override
     public void update(float x, float y) {
         radius = (float) Math.sqrt(Math.pow(this.x - x, 2) + Math.pow(this.y - y,2));
@@ -89,5 +88,8 @@ public class Circle extends DrawShape {
     public void startMove(float x, float y) {
         this.x = x;
         this.y = y;
+
+        p0Past = null;
+        p1Past = null;
     }
 }

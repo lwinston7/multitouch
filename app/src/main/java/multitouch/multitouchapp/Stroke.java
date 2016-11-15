@@ -1,5 +1,6 @@
 package multitouch.multitouchapp;
 
+import android.graphics.Color;
 import android.graphics.Point;
 
 /**
@@ -8,12 +9,37 @@ import android.graphics.Point;
  */
 
 public abstract class Stroke {
+    protected int mColor;
+    protected float mSize;
+    protected Point p0Past, p1Past;
+
+    public void setColor(int c) {
+        mColor = c;
+    }
+
+    public void setSize(float s) {
+        mSize = s;
+    }
+
+    public int getColor() {
+        return mColor;
+    }
+
+    public float getSize() {
+        return mSize;
+    }
+
     public abstract void startStroke(float x, float y);
     public abstract void update(float x, float y);
     public abstract void finishStroke(float x, float y);
     public abstract boolean containsTap(float x1, float y1, float x2, float y2);
     public abstract float distanceFromTap(float x1, float y1, float x2, float y2);
-    public abstract void move(float x, float y);
+
+    // Translate the stroke by dx and dy.
+    public abstract void move(float dx, float dy);
+
+    // Translate, scale, or rotate the stroke by two control points.
+    public abstract void move(Point p0, Point p1);
     public abstract void startMove(float x, float y);
 
     protected double distance(Point start, Point end) {

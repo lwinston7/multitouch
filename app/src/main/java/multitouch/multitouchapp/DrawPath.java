@@ -1,8 +1,10 @@
 package multitouch.multitouchapp;
 
+import android.graphics.Matrix;
 import android.graphics.Path;
 import android.graphics.PathMeasure;
 import android.graphics.Point;
+import android.graphics.RectF;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -81,8 +83,31 @@ public class DrawPath extends Stroke {
     }
 
     @Override
+    public void move(Point p0, Point p1) {
+        float currDistance = (float) distance(p0, p1);
+        float currXDistance = p0.x - p1.x;
+        float currYDistance = p0.y - p1.y;
+        float pastDistance = (float) distance(this.p0Past, this.p1Past);
+        float pastXDistance = p0Past.x - p1Past.x;
+        float pastYDistance = p0Past.y - p1Past.y;
+        float deltaDistance = currDistance - pastDistance;
+
+        // If delta distance is significant, move with p0. Otherwise, move with the midpoint.
+        if (deltaDistance > 100) {
+            move(p0.x, p0.y);
+        } else {
+            move((p0.x + p1.x) / 2f, (p1.y + p0.y) / 2f);
+        }
+        this.p0Past = p0;
+        this.p1Past = p1;
+    }
+
+    @Override
     public void startMove(float x, float y) {
         moveX = x;
         moveY = y;
+        // TODO: (Lauren) This should be the actual points, not the same x, y.
+        p0Past = new Point((int)x, (int)y);
+        p1Past = new Point((int)x, (int)y);
     }
 }

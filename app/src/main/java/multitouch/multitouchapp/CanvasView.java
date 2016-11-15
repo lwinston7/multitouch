@@ -11,6 +11,7 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Point;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -150,6 +151,10 @@ public class CanvasView extends View{
                 currentStroke.startStroke(x, y);
                 break;
         }
+        if (currentStroke != null) {
+            currentStroke.setColor(paintColor);
+            currentStroke.setSize(brushSize);
+        }
     }
 
     private void startPath(float x, float y) {
@@ -199,19 +204,14 @@ public class CanvasView extends View{
             upPath(x, y);
         } else if (currentStroke != null){
             currentStroke.finishStroke(x, y);
-            switch (currentDrawMode) {
-                case Line:
-                    drawCanvas.drawPath(((DrawPath) currentStroke).getDrawPath(), drawPaint);
-                    break;
-                case Circle:
-                    Circle c = (Circle) currentStroke;
-                    drawCanvas.drawCircle(c.getX(), c.getY(), c.getRadius(), drawPaint);
-                    break;
-                case Rectangle:
-                    Rectangle r = (Rectangle) currentStroke;
-                    drawCanvas.drawRect(r.getRect(), drawPaint);
-                    break;
-
+            if (currentStroke instanceof DrawPath) {
+                drawCanvas.drawPath(((DrawPath) currentStroke).getDrawPath(), drawPaint);
+            } else if (currentStroke instanceof Circle) {
+                Circle c = (Circle) currentStroke;
+                drawCanvas.drawCircle(c.getX(), c.getY(), c.getRadius(), drawPaint);
+            } else if (currentStroke instanceof Rectangle) {
+                Rectangle r = (Rectangle) currentStroke;
+                drawCanvas.drawRect(r.getRect(), drawPaint);
             }
 
             strokes.add(currentStroke);
@@ -256,7 +256,18 @@ public class CanvasView extends View{
                     Log.d("inside move hold 1", currGestureMode.toString());
                     //add a condition here
                     if (currentStroke != null && currGestureMode == GestureMode.Drag) {
-                        currentStroke.move(x, y);
+                        Log.d("drag", event.getPointerCount() + "");
+                        if (event.getPointerCount() >= 2) {
+                            Point p0 = new Point((int) event.getX(0), (int) event.getY(0));
+                            Point p1 = new Point((int) event.getX(0), (int) event.getY(1));
+                            currentStroke.move(p0, p1);
+                            if (currentStroke instanceof DrawShape && ((DrawShape) currentStroke).getIsFilled()) {
+                                drawPaint.setStyle(Paint.Style.FILL);
+                                drawPaint.setAlpha(((DrawShape) currentStroke).getTransparency());
+                            }
+                        } else {
+                            currentStroke.move(x, y);
+                        }
                     }
                     Log.d(currTouchMode.toString(),currGestureMode.toString());
                     invalidate();
@@ -356,13 +367,12 @@ public class CanvasView extends View{
                     upTouch(x, y);
                 } else {
                     currTouchMode = TouchMode.SingleFingerDraw;
-                    drawPaint.setStrokeWidth(brushSize);
                     if (currentStroke != null) {
                         if (currentStroke instanceof  DrawPath) {
                             drawCanvas.drawPath(((DrawPath) currentStroke).getDrawPath(), drawPaint);
                         } else if (currentStroke instanceof Circle) {
-                            Circle c = (Circle) currentStroke;
-                            drawCanvas.drawCircle(c.getX(),c.getY(),c.getRadius(),drawPaint);
+                                Circle c = (Circle) currentStroke;
+                                drawCanvas.drawCircle(c.getX(),c.getY(),c.getRadius(),drawPaint);
                         } else if (currentStroke instanceof Rectangle) {
                             Rectangle r = (Rectangle) currentStroke;
                             drawCanvas.drawRect(r.getRect(), drawPaint);
@@ -371,6 +381,10 @@ public class CanvasView extends View{
                     }
                     currentStroke = null;
                 }
+                drawPaint.setColor(paintColor);
+                drawPaint.setStrokeWidth(brushSize);
+                drawPaint.setStyle((Paint.Style.STROKE));
+                drawPaint.setAlpha(255);
                 invalidate();
                 break;
             case MotionEvent.ACTION_OUTSIDE:
@@ -383,6 +397,8 @@ public class CanvasView extends View{
                     mLastFingerDown = System.currentTimeMillis();
                     currentStroke = null;
                 }
+                // TODO: (Also, adjust these based off of their states? Instead of just pointers.)
+                //TODO: (Lauren) Add in change color / brush size here.
                 if (event.getPointerCount() == 2) {
                     currGestureMode = GestureMode.Drag;
                 }
@@ -564,14 +580,34 @@ public class CanvasView extends View{
 
         Stroke str = strokes.remove(index);
         resetCanvas();
+        drawPaint.setColor(str.getColor());
+        drawPaint.setStrokeWidth(str.getSize());
+        if (str instanceof DrawShape && ((DrawShape)str).getIsFilled()) {
+            drawPaint.setStyle(Paint.Style.FILL);
+            drawPaint.setAlpha(((DrawShape) str).getTransparency());
+        }
         return str;
     }
 
     private void resetCanvas() {
         drawCanvas.drawColor(bgColor);
         for (Stroke str : strokes) {
+            drawPaint.setColor(str.getColor());
+            drawPaint.setStrokeWidth(str.getSize());
+            if (str instanceof DrawShape && ((DrawShape)str).getIsFilled()) {
+                drawPaint.setStyle(Paint.Style.FILL);
+                drawPaint.setAlpha(((DrawShape) str).getTransparency());
+            } else {
+                drawPaint.setStyle(Paint.Style.STROKE);
+                drawPaint.setAlpha(255);
+            }
             drawStrokeOnCanvas(str);
         }
+
+        drawPaint.setColor(paintColor);
+        drawPaint.setStrokeWidth(brushSize);
+        drawPaint.setStyle(Paint.Style.STROKE);
+        drawPaint.setAlpha(255);
     }
 
     private void drawStrokeOnCanvas(Stroke str) {
@@ -619,9 +655,9 @@ public class CanvasView extends View{
             if (currTouchMode == TouchMode.TwoFingerWait
                     && e2.getPointerCount() == 2) {
                 // Clamp values between 0 -> width / height.
-                mScrollX = Math.min(Math.max(mScrollX + distanceX, 0), width - getWidth());
+              /*  mScrollX = Math.min(Math.max(mScrollX + distanceX, 0), width - getWidth());
                 mScrollY = Math.min(Math.max(mScrollY + distanceY, 0), height - getHeight());
-                invalidate();
+                invalidate();*/
                 return true;
             } else {
                 return false;

@@ -9,9 +9,9 @@ import android.util.Log;
  */
 
 public class Rectangle extends DrawShape{
-    Rect rect;
-    int left, top;
-    float moveX, moveY;
+    private Rect rect;
+    private int left, top;
+    private float moveX, moveY;
     private static final float TOLERANCE = 1;
 
     @Override
@@ -100,6 +100,8 @@ public class Rectangle extends DrawShape{
     public void startMove(float x1, float y1) {
         moveX = x1;
         moveY = y1;
+        p0Past = null;
+        p1Past = null;
     }
 
     public Rect getRect() {
