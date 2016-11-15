@@ -2,6 +2,7 @@ package multitouch.multitouchapp;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Path;
 import android.graphics.Point;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -21,31 +22,28 @@ public class Circle extends DrawShape {
         radius = (float) Math.sqrt(Math.pow(this.x - x, 2) + Math.pow(this.y - y,2));
     }
 
-    public float getRadius() {
-        return radius;
-    }
     public void updateWithScale(float scaleIndex) {
         radius = radius * scaleIndex;
-    }
-
-    public float getX() {
-        return x;
-    }
-
-    public float getY() {
-        return y;
     }
 
     @Override
     public void startStroke(float x, float y) {
         this.x = x;
         this.y = y;
-        radius = 10;
+        radius = 0;
     }
 
     @Override
     public void finishStroke(float x, float y) {
         update(x, y);
+    }
+
+    @Override
+    public Path getDrawPath() {
+        Path drawPath = new Path();
+        drawPath.moveTo(x, y);
+        drawPath.addCircle(x, y, radius, Path.Direction.CW);
+        return drawPath;
     }
 
     @Override

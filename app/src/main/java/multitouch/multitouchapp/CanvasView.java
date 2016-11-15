@@ -120,16 +120,7 @@ public class CanvasView extends View{
 
         //TODO: Offset by mScrollX and mScrollY if needed.
             if (currentStroke != null && currentDrawMode != DrawMode.Erase) {
-                if (currentStroke instanceof DrawPath) {
-                    canvas.drawPath(((DrawPath) currentStroke).getDrawPath(), drawPaint);
-                } else if (currentStroke instanceof Circle) {
-                    // draw shape.
-                    Circle c = (Circle) currentStroke;
-                    canvas.drawCircle(c.getX(), c.getY(), c.getRadius(), drawPaint);
-                } else if (currentStroke instanceof Rectangle) {
-                    Rectangle r = (Rectangle) currentStroke;
-                    canvas.drawRect(r.getRect(), drawPaint);
-                }
+                    canvas.drawPath(currentStroke.getDrawPath(), drawPaint);
             }
     }
 
@@ -204,16 +195,7 @@ public class CanvasView extends View{
             upPath(x, y);
         } else if (currentStroke != null){
             currentStroke.finishStroke(x, y);
-            if (currentStroke instanceof DrawPath) {
-                drawCanvas.drawPath(((DrawPath) currentStroke).getDrawPath(), drawPaint);
-            } else if (currentStroke instanceof Circle) {
-                Circle c = (Circle) currentStroke;
-                drawCanvas.drawCircle(c.getX(), c.getY(), c.getRadius(), drawPaint);
-            } else if (currentStroke instanceof Rectangle) {
-                Rectangle r = (Rectangle) currentStroke;
-                drawCanvas.drawRect(r.getRect(), drawPaint);
-            }
-
+            drawCanvas.drawPath(currentStroke.getDrawPath(), drawPaint);
             strokes.add(currentStroke);
             currentStroke = null;
         }
@@ -293,20 +275,12 @@ public class CanvasView extends View{
                         Log.d("inside move 44 rorate", currGestureMode.toString());
                         if (event.getPointerCount() == 4) {
                             float rotateDegree = rotation(event);
-                            if (currentStroke instanceof Circle) {
-                                Circle tappedCircle = (Circle) currentStroke;
+                            if (currentStroke instanceof DrawShape) {
                                 drawCanvas.save();
                                 drawCanvas.rotate(rotateDegree);
-                                drawCanvas.drawCircle(tappedCircle.getX(), tappedCircle.getY(),
-                                        tappedCircle.getRadius(),drawPaint);
+                                drawCanvas.drawPath(currentStroke.getDrawPath(),drawPaint);
                                 drawCanvas.restore();
                                 break;
-                            } else if (tappedStroke instanceof Rectangle) {
-                                Rectangle tappedRect = (Rectangle) currentStroke;
-                                drawCanvas.save();
-                                drawCanvas.rotate(rotateDegree);
-                                drawCanvas.drawRect(tappedRect.getRect(), drawPaint);
-                                drawCanvas.restore();
                             }
                         }
                         invalidate();
@@ -376,19 +350,10 @@ public class CanvasView extends View{
                         tappedStroke = getTappedShape(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
                         if (tappedStroke != null) {
                             float rotateDegree = rotation(event);
-                            if (tappedStroke instanceof Circle) {
-                                Circle tappedCircle = (Circle) tappedStroke;
+                            if (tappedStroke instanceof DrawShape) {
                                 drawCanvas.save();
                                 drawCanvas.rotate(rotateDegree);
-                                drawCanvas.drawCircle(tappedCircle.getX(), tappedCircle.getY(),
-                                        tappedCircle.getRadius(),drawPaint);
-                                drawCanvas.restore();
-                                break;
-                            } else if (tappedStroke instanceof Rectangle) {
-                                Rectangle tappedRect = (Rectangle) tappedStroke;
-                                drawCanvas.save();
-                                drawCanvas.rotate(rotateDegree);
-                                drawCanvas.drawRect(tappedRect.getRect(), drawPaint);
+                                drawCanvas.drawPath(currentStroke.getDrawPath(),drawPaint);
                                 drawCanvas.restore();
                             }
 
@@ -419,15 +384,7 @@ public class CanvasView extends View{
                 } else {
                     currTouchMode = TouchMode.SingleFingerDraw;
                     if (currentStroke != null) {
-                        if (currentStroke instanceof  DrawPath) {
-                            drawCanvas.drawPath(((DrawPath) currentStroke).getDrawPath(), drawPaint);
-                        } else if (currentStroke instanceof Circle) {
-                                Circle c = (Circle) currentStroke;
-                                drawCanvas.drawCircle(c.getX(),c.getY(),c.getRadius(),drawPaint);
-                        } else if (currentStroke instanceof Rectangle) {
-                            Rectangle r = (Rectangle) currentStroke;
-                            drawCanvas.drawRect(r.getRect(), drawPaint);
-                        }
+                        drawCanvas.drawPath(currentStroke.getDrawPath(), drawPaint);
                         strokes.add(currentStroke);
                     }
                     currentStroke = null;
@@ -470,11 +427,11 @@ public class CanvasView extends View{
                 if (currGestureMode == GestureMode.Clone) {
                     Log.d("action up", "inside clone");
                     if (clonedCircle != null) {
-                        drawCanvas.drawCircle(clonedCircle.getX(),clonedCircle.getY(),clonedCircle.getRadius(),drawPaint);
+                        drawCanvas.drawPath(clonedCircle.getDrawPath(),drawPaint);
                         strokes.add(clonedCircle);
                         clonedCircle = null;
                     } else if (clonedRect != null) {
-                        drawCanvas.drawRect(clonedRect.getRect(), drawPaint);
+                        drawCanvas.drawPath(clonedRect.getDrawPath(), drawPaint);
                         strokes.add(clonedRect);
                         clonedRect = null;
                     }
@@ -659,15 +616,7 @@ public class CanvasView extends View{
     }
 
     private void drawStrokeOnCanvas(Stroke str) {
-        if (str instanceof DrawPath) {
-            drawCanvas.drawPath(((DrawPath) str).getDrawPath(), drawPaint);
-        } else if (str instanceof Circle) {
-            Circle c = (Circle) str;
-            drawCanvas.drawCircle(c.getX(), c.getY(), c.getRadius(), drawPaint);
-        } else if (str instanceof Rectangle) {
-            Rectangle r = (Rectangle) str;
-            drawCanvas.drawRect(r.getRect(), drawPaint);
-        }
+        drawCanvas.drawPath(str.getDrawPath(), drawPaint);
     }
 
     public Stroke getTappedShape(float x1, float y1, float x2, float y2) {

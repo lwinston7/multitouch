@@ -1,5 +1,6 @@
 package multitouch.multitouchapp;
 
+import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.Log;
@@ -30,6 +31,14 @@ public class Rectangle extends DrawShape{
     @Override
     public void finishStroke(float x, float y) {
         update(x, y);
+    }
+
+    @Override
+    public Path getDrawPath() {
+        Path drawPath = new Path();
+        drawPath.moveTo(rect.centerX(), rect.centerY());
+        drawPath.addRect(rect.left,rect.top,rect.right,rect.bottom, Path.Direction.CW);
+        return drawPath;
     }
 
     @Override

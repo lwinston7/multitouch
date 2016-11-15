@@ -1,6 +1,7 @@
 package multitouch.multitouchapp;
 
 import android.graphics.Color;
+import android.graphics.Path;
 import android.graphics.Point;
 
 /**
@@ -35,6 +36,7 @@ public abstract class Stroke {
     public abstract void startStroke(float x, float y);
     public abstract void update(float x, float y);
     public abstract void finishStroke(float x, float y);
+    public abstract Path getDrawPath();
     public abstract boolean containsTap(float x1, float y1, float x2, float y2);
     public abstract float distanceFromTap(float x1, float y1, float x2, float y2);
 
