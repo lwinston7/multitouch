@@ -93,4 +93,9 @@ public class PerfectStroke extends Stroke{
     public void startMove(float x, float y) {
         mPerfectStroke.startMove(x, y);
     }
+
+    @Override
+    public boolean isStrayStroke() {
+        return false;
+    }
 }

@@ -17,6 +17,8 @@ public abstract class Stroke {
     // The minimum change in distance between two fingers that will register a change.
     protected float MINIMUM_DELTA_FINGER_DISTANCE = .5f;
 
+    protected final float FINGER_PIXELS = 50f;
+
     public void setColor(int c) {
         mColor = c;
     }
@@ -50,4 +52,7 @@ public abstract class Stroke {
     protected double distance(Point start, Point end) {
         return Math.sqrt(Math.pow(start.x - end.x, 2) + Math.pow(start.y - end.y, 2));
     }
+
+    public abstract boolean isStrayStroke();
+
 }

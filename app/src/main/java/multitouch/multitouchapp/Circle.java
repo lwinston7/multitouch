@@ -90,4 +90,9 @@ public class Circle extends DrawShape {
         p0Past = null;
         p1Past = null;
     }
+
+    @Override
+    public boolean isStrayStroke() {
+        return radius < FINGER_PIXELS;
+    }
 }

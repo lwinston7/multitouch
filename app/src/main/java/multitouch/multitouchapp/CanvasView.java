@@ -242,6 +242,10 @@ public class CanvasView extends View{
                         // Make sure that two pointers are down.
                         // TODO: Add a check to make sure that they haven't been moved for too long?
                         if (event.getPointerCount() >= 2) {
+                            if (currentStroke != null && !currentStroke.isStrayStroke()) {
+                                upTouch(event.getX(1), event.getY(1));
+                            }
+
                             currentStroke = popNearestStroke(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
                         }
                         if (currentStroke != null) {
@@ -250,6 +254,10 @@ public class CanvasView extends View{
                             invalidate();
                         } else {
                             mLastFingerDown = System.currentTimeMillis();
+                        }
+                    } else {
+                        if (currentStroke != null) {
+                            moveTouch(x, y);
                         }
                     }
                 } else if (currTouchMode == TouchMode.SingleFingerDraw) {
@@ -267,7 +275,7 @@ public class CanvasView extends View{
                             Point p0 = new Point((int) event.getX(0), (int) event.getY(0));
                             Point p1 = new Point((int) event.getX(1), (int) event.getY(1));
                             //change here
-                            currentStroke.move((p0.x + p1.x)/2, (p0.y + p1.y)/2);
+                            currentStroke.move(p0, p1);
                             if (currentStroke instanceof DrawShape && ((DrawShape) currentStroke).getIsFilled()) {
                                 drawPaint.setStyle(Paint.Style.FILL);
                                 drawPaint.setAlpha(((DrawShape) currentStroke).getTransparency());
@@ -387,7 +395,6 @@ public class CanvasView extends View{
                 if (currTouchMode == TouchMode.SingleFingerDraw) {
                     currTouchMode = TouchMode.TwoFingerWait;
                     mLastFingerDown = System.currentTimeMillis();
-                    currentStroke = null;
                 } else if (currTouchMode == TouchMode.OneFingerWait) {
                     // Attempt to make perfect stroke
                     currentStroke = new PerfectStroke();
@@ -422,6 +429,8 @@ public class CanvasView extends View{
             case MotionEvent.ACTION_POINTER_UP:
                 if (currTouchMode == TouchMode.Perfection) {
                     currTouchMode = TouchMode.PerfectionWait;
+                } else if (currTouchMode == TouchMode.TwoFingerWait) {
+                    currTouchMode = TouchMode.SingleFingerDraw;
                 }
                 if (currGestureMode == GestureMode.Clone) {
                     Log.d("action up", "inside clone");

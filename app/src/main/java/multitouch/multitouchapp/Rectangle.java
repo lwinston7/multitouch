@@ -127,6 +127,11 @@ public class Rectangle extends DrawShape{
         p1Past = null;
     }
 
+    @Override
+    public boolean isStrayStroke() {
+        return !(rect.width() < FINGER_PIXELS && rect.height() < FINGER_PIXELS) ;
+    }
+
     public Rect getRect() {
         return rect;
     }

@@ -97,6 +97,8 @@ public class DrawPath extends Stroke {
         float deltaDistance = currDistance - pastDistance;
 
         // If delta distance is significant, move with p0. Otherwise, move with the midpoint.
+        //TODO: Increase distance.
+        //Use pm.getSegment() to manipulate the line.
         if (Math.abs(deltaDistance) > MINIMUM_DELTA_FINGER_DISTANCE) {
             // TODO: Add line manipulation here.
             ArrayList<Point> points = new ArrayList<Point>();
@@ -138,5 +140,17 @@ public class DrawPath extends Stroke {
         // TODO: (Lauren) This should be the actual points, not the same x, y.
         p0Past = new Point((int)x, (int)y);
         p1Past = new Point((int)x, (int)y);
+    }
+
+    @Override
+    public boolean isStrayStroke() {
+        PathMeasure pm = new PathMeasure(drawPath, false);
+        float[] coordinates = {0f, 0f};
+        pm.getPosTan(0, coordinates, null);
+        if (pm.getLength() < FINGER_PIXELS) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
