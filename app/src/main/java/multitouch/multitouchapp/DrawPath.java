@@ -1,5 +1,6 @@
 package multitouch.multitouchapp;
 
+import android.annotation.TargetApi;
 import android.graphics.Matrix;
 import android.graphics.Path;
 import android.graphics.PathMeasure;
@@ -13,22 +14,23 @@ import java.util.ArrayList;
  * Created by Lauren on 11/6/2016.
  */
 
+@TargetApi(21)
 public class DrawPath extends Stroke {
-    // TODO: (Make ArrayList)
-    private Path drawPath;
-    private float mX;
-    private float mY;
-    private static final float TOLERANCE = 5;
-    private float moveX = 0;
-    private float moveY = 0;
-    private final float SUBDIVIDE_THRESHOLD = .01f;
+    // TODO: (Use ArrayList)
+    private ArrayList<Path> paths = new ArrayList<Path>();
+    protected Path drawPath;
+    protected float mX;
+    protected float mY;
+    protected static final float TOLERANCE = 5;
+    protected float moveX = 0;
+    protected float moveY = 0;
+    protected final float SUBDIVIDE_THRESHOLD = .01f;
 
     @Override
     public void startStroke(float x, float y) {
         drawPath = new Path();
         drawPath.moveTo(x,y);
-        // drawPaths = new ArrayList<Path>();
-        //drawPaths.add(path;
+        paths.add(drawPath);
         mX = x;
         mY = y;
     }
@@ -49,6 +51,7 @@ public class DrawPath extends Stroke {
     @Override
     public void finishStroke(float x, float y) {
         update(x, y);
+        Log.d("convex", drawPath.isConvex() + "");
     }
 
     public Path getDrawPath() {
