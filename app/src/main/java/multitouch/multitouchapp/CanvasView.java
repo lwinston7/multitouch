@@ -48,6 +48,7 @@ public class CanvasView extends View{
     private Stroke tappedStroke;
     private Circle clonedCircle;
     private Rectangle clonedRect;
+    private float prevSwipeY1, prevSwipeY2, prevSwipeY3, prevSwipeY4;
 
     private float mScrollX = 0;
     private float mScrollY = 0;
@@ -56,6 +57,7 @@ public class CanvasView extends View{
     private float mLastY = 0;
 
     private int width, height;
+    private boolean isCloned;
 
     private enum DrawMode {
         Line,
@@ -224,6 +226,7 @@ public class CanvasView extends View{
         //Draw normally
         float x = event.getX();
         float y = event.getY();
+        isCloned = false;
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 startTouch(x, y);
@@ -262,8 +265,9 @@ public class CanvasView extends View{
                         Log.d("drag", event.getPointerCount() + "");
                         if (event.getPointerCount() >= 2) {
                             Point p0 = new Point((int) event.getX(0), (int) event.getY(0));
-                            Point p1 = new Point((int) event.getX(0), (int) event.getY(1));
-                            currentStroke.move(p0, p1);
+                            Point p1 = new Point((int) event.getX(1), (int) event.getY(1));
+                            //change here
+                            currentStroke.move((p0.x + p1.x)/2, (p0.y + p1.y)/2);
                             if (currentStroke instanceof DrawShape && ((DrawShape) currentStroke).getIsFilled()) {
                                 drawPaint.setStyle(Paint.Style.FILL);
                                 drawPaint.setAlpha(((DrawShape) currentStroke).getTransparency());
@@ -274,27 +278,35 @@ public class CanvasView extends View{
                     }
                     if (currentStroke != null && currGestureMode == GestureMode.Clone) {
                         Log.d("inside move 22 clone", currGestureMode.toString() + event.getPointerCount());
-                        if (event.getPointerCount() == 3 ) {
-                            float cloneX = event.getX(2);
-                            float cloneY = event.getY(2);
-                            Log.d("## inside move 22 clone", currentStroke.toString());
+                        if (event.getPointerCount() == 1 ) {
+                            float cloneX = event.getX(0);
+                            float cloneY = event.getY(0);
                             if (currentStroke instanceof Circle) {
-                                    clonedCircle = (Circle) currentStroke;
-                                    //drawCanvas.drawCircle(clonedCircle.getX(), clonedCircle.getY(), clonedCircle.getRadius(), drawPaint);
-                                    clonedCircle.move(cloneX, cloneY);
-                                    invalidate();
+                                clonedCircle = (Circle) currentStroke;
+                                if (!isCloned) {
+                                    Log.d("## inside move 22 clone", currentStroke.toString());
+                                    strokes.add(currentStroke);
+                                    isCloned = true;
+                                }
+                                clonedCircle.move(cloneX, cloneY);
+                                clonedCircle = null;
+                                //drawCanvas.drawCircle(clonedCircle.getX(), clonedCircle.getY(), clonedCircle.getRadius(), drawPaint);
                             } else if (currentStroke instanceof Rectangle) {
-                                    clonedRect = (Rectangle) currentStroke;
+                                clonedRect = (Rectangle) currentStroke;
+                                if (!isCloned){
                                     Log.d("inside clone 22 rect", clonedRect.toString());
                                     //drawCanvas.drawRect(clonedRect.getRect(), drawPaint);
                                     clonedRect.move(cloneX, cloneY);
-                                    invalidate();
+                                    strokes.add(currentStroke);
+                                    isCloned = true;
+                                }
                             }
                         }
+                        invalidate();
                     }
                     if (currentStroke != null && currGestureMode == GestureMode.Rotate) {
-                        Log.d("inside move 44 rorate", currGestureMode.toString());
-                        if (event.getPointerCount() == 4) {
+                        Log.d("inside move 33 rorate", currGestureMode.toString());
+                        if (event.getPointerCount() == 2) {
                             float rotateDegree = rotation(event);
                             if (currentStroke instanceof DrawShape) {
                                 drawCanvas.save();
@@ -306,7 +318,24 @@ public class CanvasView extends View{
                         }
                         invalidate();
                     }
-                    //invalidate();
+                    if (currentStroke != null && currGestureMode == GestureMode.Scale) {
+                        Log.d("inside move 44 scale", currGestureMode.toString());
+                        //scale shape
+                        currScaleDist = spacingScale(event);
+                        float scaleIndex = currScaleDist/prevScaleDist;
+                        if (currentStroke instanceof Circle) {
+                            Log.d("inside scale 44 Circle"," " + scaleIndex);
+                            ((Circle) currentStroke).updateWithScale(scaleIndex);
+                        } else if (currentStroke instanceof Rectangle) {
+                            Log.d("inside scale 44 Circle"," " + scaleIndex);
+                            float updatedH = ((Rectangle) currentStroke).getRect().height() * scaleIndex;
+                            float updatedW = ((Rectangle) currentStroke).getRect().width() * scaleIndex;
+                            //TODO: This isn't going to work. Call an update method that updates the height
+                            // and width.
+                            ((Rectangle)currentStroke).updateHeightWidth(updatedH, updatedW);
+                        }invalidate();
+                    }
+
                 }
 
                 if (event.getPointerCount() >= 2) {
@@ -316,86 +345,14 @@ public class CanvasView extends View{
                     }
                 }
                 if (currGestureMode == GestureMode.Drag) {
-                    //Log.d("inside move 2 drag", currGestureMode.toString());
-                    //if (event.getPointerCount() == 2) {
-                        //float dx = (event.getX(0) + event.getX(1))/2;
-                        //float dy = (event.getY(0) + event.getY(1))/2;
-                        //tappedStroke = getTappedShape(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
-                        //if (tappedStroke != null) {
-                            //tappedStroke.move(dx, dy);
-                            //if (tappedStroke instanceof Circle) {
-                                //Circle tappedCircle = (Circle) tappedStroke;
-                                //drawCanvas.drawCircle(tappedCircle.getX(), tappedCircle.getY(),
-                                        //tappedCircle.getRadius(), drawPaint);
-                                //invalidate();
-                            //} else if (tappedStroke instanceof Rectangle) {
-                                //Rectangle tappedR = (Rectangle) tappedStroke;
-                                //drawCanvas.drawRect(tappedR.getRect(),drawPaint);
-                                //invalidate();
-                           //}
-                        //}
-                    //}
                 }
-                //if (event.getPointerCount() == 3 ) {
-                    //Log.d("inside move 33 clone", currGestureMode.toString());
-                    //if (event.getPointerCount() == 3 ) {
-                        //currGestureMode = GestureMode.Clone;
-                        //float cloneX = event.getX(2);
-                        //float cloneY = event.getY(2);
-                        //tappedStroke = getTappedShape(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
-                        //if (tappedStroke != null) {
-                            //Log.d("## inside move 33 clone", tappedStroke.toString());
-                            //if (tappedStroke instanceof Circle) {
-                                //Circle tappedCircle = (Circle) tappedStroke;
-                                //clonedCircle = tappedCircle;
-                                //drawCanvas.drawCircle(clonedCircle.getX(), clonedCircle.getY(), clonedCircle.getRadius(), drawPaint);
-                                //clonedCircle.move(cloneX, cloneY);
-                                //invalidate();
-                            //}
-                            //if (tappedStroke instanceof Rectangle) {
-                                //Rectangle tappedRect = (Rectangle) tappedStroke;
-                                //clonedRect = tappedRect;
-                                //Log.d("inside clone 33 rect", clonedRect.toString());
-                                //drawCanvas.drawRect(clonedRect.getRect(), drawPaint);
-                                //clonedRect.move(cloneX, cloneY);
-                                //invalidate();
-                            //}
-                        //}
-                    //}
-                //}
-
                 if (event.getPointerCount() == 4) {
                     currGestureMode = GestureMode.Rotate;
                     Log.d("inside move 3 rorate", currGestureMode.toString());
-                    if (event.getPointerCount() == 4) {
-                        tappedStroke = getTappedShape(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
-                        if (tappedStroke != null) {
-                            float rotateDegree = rotation(event);
-                            if (tappedStroke instanceof DrawShape) {
-                                drawCanvas.save();
-                                drawCanvas.rotate(rotateDegree);
-                                drawCanvas.drawPath(currentStroke.getDrawPath(),drawPaint);
-                                drawCanvas.restore();
-                            }
-
-                        }
-                    }
                 }
                 if (event.getPointerCount() == 5) {
                     currGestureMode = GestureMode.Scale;
-                    Log.d("inside move 4 scale", currGestureMode.toString());
-                    //scale shape
-                    currScaleDist = spacingScale(event);
-                    float scaleIndex = currScaleDist/prevScaleDist;
-                    if (currentStroke instanceof Circle) {
-                        ((Circle) currentStroke).updateWithScale(scaleIndex);
-                    } else if (currentStroke instanceof Rectangle) {
-                        float updatedH = ((Rectangle) currentStroke).getRect().height() * scaleIndex;
-                        float updatedW = ((Rectangle) currentStroke).getRect().width() * scaleIndex;
-                        //TODO: This isn't going to work. Call an update method that updates the height
-                        // and width.
-                        ((Rectangle)currentStroke).updateHeightWidth(updatedH, updatedW);
-                    }
+                    Log.d("inside move 5 scale", currGestureMode.toString());
                 }
                 invalidate();
                 break;
@@ -421,6 +378,12 @@ public class CanvasView extends View{
                 invalidate();
                 break;
             case MotionEvent.ACTION_POINTER_DOWN:
+                if (currGestureMode != null) {
+                    Log.d("number of Pointer Down", currGestureMode.toString() + event.getPointerCount());
+                }
+                if (currTouchMode != null) {
+                    Log.d("number of Pointer Down", currTouchMode.toString() + event.getPointerCount());
+                }
                 if (currTouchMode == TouchMode.SingleFingerDraw) {
                     currTouchMode = TouchMode.TwoFingerWait;
                     mLastFingerDown = System.currentTimeMillis();
@@ -435,24 +398,25 @@ public class CanvasView extends View{
                     ((PerfectStroke)currentStroke).newStroke();
                     currTouchMode = TouchMode.Perfection;
                     invalidate();
-
                 }
                 // TODO: (Also, adjust these based off of their states? Instead of just pointers.)
                 //TODO: (Lauren) Add in change color / brush size here.
                 if (event.getPointerCount() == 2) {
                     currGestureMode = GestureMode.Drag;
                 }
-                if (event.getPointerCount() == 3) {
+                else if (event.getPointerCount() == 3) {
                     currGestureMode = GestureMode.Clone;
                 }
-                if (event.getPointerCount() == 4) {
+                else if (event.getPointerCount() == 4) {
                     currGestureMode = GestureMode.Rotate;
+                    prevSwipeY1 = event.getY(0);
+                    prevSwipeY2 = event.getY(1);
+                    prevSwipeY3 = event.getY(2);
+                    prevSwipeY4 = event.getY(3);
                 }
-                if (event.getPointerCount() == 5) {
+                else if (event.getPointerCount() == 5) {
                     currGestureMode = GestureMode.Scale;
                     prevScaleDist = spacingScale(event);
-                    //###
-
                 }
                 break;
             case MotionEvent.ACTION_POINTER_UP:
@@ -550,8 +514,8 @@ public class CanvasView extends View{
 
     //calculate the degree to be rotated by
     private float rotation(MotionEvent event) {
-        double delta_x = (event.getX(2) - event.getX(3));
-        double delta_y = (event.getY(2) - event.getY(3));
+        double delta_x = (event.getX(0) - event.getX(1));
+        double delta_y = (event.getY(0) - event.getY(1));
         double radians = Math.atan2(delta_x, delta_y);
         return (float) Math.toDegrees(radians);
     }

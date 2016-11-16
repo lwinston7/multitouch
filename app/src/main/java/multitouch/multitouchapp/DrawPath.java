@@ -51,7 +51,7 @@ public class DrawPath extends Stroke {
     @Override
     public void finishStroke(float x, float y) {
         update(x, y);
-        Log.d("convex", drawPath.isConvex() + "");
+        //Log.d("convex", drawPath.isConvex() + "");
     }
 
     public Path getDrawPath() {
