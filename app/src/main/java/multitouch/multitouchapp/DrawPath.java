@@ -90,6 +90,8 @@ public class DrawPath extends Stroke {
 
     @Override
     public void move(Point p0, Point p1) {
+        Point midpoint = new Point((int) (p0.x + p1.x / 2f), (int) (p0.y + p1.y / 2f));
+        float minDistance = Integer.MAX_VALUE;
         float currDistance = (float) distance(p0, p1);
         float pastDistance = (float) distance(this.p0Past, this.p1Past);
         float deltaDistance = currDistance - pastDistance;
@@ -97,6 +99,28 @@ public class DrawPath extends Stroke {
         // If delta distance is significant, move with p0. Otherwise, move with the midpoint.
         if (Math.abs(deltaDistance) > MINIMUM_DELTA_FINGER_DISTANCE) {
             // TODO: Add line manipulation here.
+            ArrayList<Point> points = new ArrayList<Point>();
+            int minPoint = 0;
+            PathMeasure pm = new PathMeasure(drawPath, false);
+            float len = 0;
+            int i = 0;
+            while (len < pm.getLength()) {
+                float[] coordinates = {0f, 0f};
+                pm.getPosTan(len, coordinates, null);
+                Point pt = new Point((int) coordinates[0], (int) coordinates[1]);
+                float distance = (float) distance(midpoint, pt);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    minPoint = i;
+                }
+                points.add(pt);
+                len += pm.getLength() * SUBDIVIDE_THRESHOLD;
+                i++;
+            }
+            points.remove(minPoint);
+            RectF r =  new RectF();
+            drawPath.computeBounds(r, false);
+            drawPath.addArc(r, 0, 90);
             this.p0Past = p0;
             this.p1Past = p1;
             return;
