@@ -25,7 +25,21 @@ public class Rectangle extends DrawShape{
     @Override
     public void update(float right, float bottom) {
         // TODO: Adjust for negative numbers.
-        rect.set(left, top, (int) right,(int) bottom);
+        int actualLeft = left;
+        int actualTop = top;
+        int actualRight = (int) right;
+        int actualBottom = (int) bottom;
+        if (right < left) {
+            actualLeft = actualRight;
+            actualRight = left;
+        }
+
+        if (bottom < top) {
+            actualTop = actualBottom;
+            actualBottom = top;
+        }
+
+        rect.set(actualLeft, actualTop, actualRight,actualBottom);
     }
 
     @Override
