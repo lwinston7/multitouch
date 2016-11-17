@@ -47,36 +47,6 @@ public class Circle extends DrawShape {
     }
 
     @Override
-    public boolean containsTap(float x1, float y1, float x2, float y2) {
-        float midx = (x1 + x2) / 2f;
-        float midy = (y1 + y2) / 2f;
-        if (midx < (x - radius - TOLERANCE)) {
-            return false;
-        } else if (midx > (x + radius + TOLERANCE)) {
-            return false;
-        } else if (midy < (y - radius - TOLERANCE)) {
-            return false;
-        } else if (midy > (y + radius + TOLERANCE)) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public float distanceFromTap(float x1, float y1, float x2, float y2) {
-        if (containsTap(x1, y1, x2, y2)) {
-            return 0;
-        } else {
-            Point midpoint = new Point((int) (x1 + x2 / 2f), (int) (y1 + y2 / 2f));
-            return (float) distance(midpoint);
-        }
-    }
-
-    protected double distance(Point pt) {
-        return Math.abs(Math.sqrt(Math.pow(pt.x,2) + Math.pow(pt.y,2)) - radius);
-    }
-
-    @Override
     public void move(float x1, float y1) {
         x = x1;
         y = y1;
