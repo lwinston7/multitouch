@@ -49,6 +49,7 @@ public class CanvasView extends View{
     private Circle clonedCircle;
     private Rectangle clonedRect;
     private float prevSwipeY1, prevSwipeY2, prevSwipeY3, prevSwipeY4;
+    private float lastSwipeY1, lastSwipeY2,lastSwipeY3, lastSwipeY4;
 
     private float mScrollX = 0;
     private float mScrollY = 0;
@@ -58,6 +59,8 @@ public class CanvasView extends View{
 
     private int width, height;
     private boolean isCloned;
+    private int mActivePointer1Id = -10;
+    private static final float SWIPE_TOLERANCE = 50;
 
     private enum DrawMode {
         Line,
@@ -87,7 +90,8 @@ public class CanvasView extends View{
         Drag,
         Rotate,
         Scale,
-        Clone
+        Clone,
+        Swipe
     }
 
     private GestureMode currGestureMode = null;
@@ -229,10 +233,30 @@ public class CanvasView extends View{
         isCloned = false;
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
+                if (currGestureMode != null) {
+                    Log.d("1. Down: ", currGestureMode.toString() + " "+ event.getPointerCount());
+                } else {
+                    Log.d("1. Down: ", " " + event.getPointerCount());
+                }
+                if (currTouchMode != null) {
+                    Log.d("1. Down: ", currTouchMode.toString() + " " + event.getPointerCount());
+                }
                 startTouch(x, y);
+                final float x1 = event.getX();
+                final float y1 = event.getY();
+                mActivePointer1Id = event.getPointerId(0);
                 invalidate();
                 break;
             case MotionEvent.ACTION_MOVE:
+
+                if (currGestureMode != null) {
+                    Log.d("2. Move: ", currGestureMode.toString() + event.getPointerCount());
+                } else {
+                    Log.d("2. Move: ", " " + event.getPointerCount());
+                }
+                if (currTouchMode != null) {
+                    Log.d("2. Move: ", currTouchMode.toString() + event.getPointerCount());
+                }
                 if (currTouchMode == TouchMode.OneFingerWait && distanceFromLastPoint(x, y) > MINIMUM_MOVE_DISTANCE ) {
                     currTouchMode = TouchMode.SingleFingerDraw;
                 }
@@ -267,7 +291,7 @@ public class CanvasView extends View{
                 } else if (currTouchMode == TouchMode.Perfection) {
                     moveTouch(event.getX(1), event.getY(1));
                 } else if (currTouchMode == TouchMode.Hold) {
-                    Log.d("inside move hold 1", currGestureMode.toString());
+                    //Log.d("inside move hold 1", currGestureMode.toString());
                     //add a condition here
                     if (currentStroke != null && currGestureMode == GestureMode.Drag) {
                         Log.d("drag", event.getPointerCount() + "");
@@ -285,26 +309,28 @@ public class CanvasView extends View{
                         }
                     }
                     if (currentStroke != null && currGestureMode == GestureMode.Clone) {
-                        Log.d("inside move 22 clone", currGestureMode.toString() + event.getPointerCount());
-                        if (event.getPointerCount() == 1 ) {
-                            float cloneX = event.getX(0);
-                            float cloneY = event.getY(0);
+                        Log.d("inside move 22 clone", " " + event.getPointerCount());
+                        if (event.getPointerCount() == 3 ) {
+                            float cloneX = event.getX(2);
+                            float cloneY = event.getY(2);
                             if (currentStroke instanceof Circle) {
                                 clonedCircle = (Circle) currentStroke;
                                 if (!isCloned) {
-                                    Log.d("## inside move 22 clone", currentStroke.toString());
+                                    //Log.d("## inside move 22 clone", currentStroke.toString());
                                     strokes.add(currentStroke);
                                     isCloned = true;
                                 }
                                 clonedCircle.move(cloneX, cloneY);
+                                invalidate();
                                 clonedCircle = null;
                                 //drawCanvas.drawCircle(clonedCircle.getX(), clonedCircle.getY(), clonedCircle.getRadius(), drawPaint);
                             } else if (currentStroke instanceof Rectangle) {
                                 clonedRect = (Rectangle) currentStroke;
                                 if (!isCloned){
-                                    Log.d("inside clone 22 rect", clonedRect.toString());
+                                    //Log.d("inside clone 22 rect", clonedRect.toString());
                                     //drawCanvas.drawRect(clonedRect.getRect(), drawPaint);
                                     clonedRect.move(cloneX, cloneY);
+                                    invalidate();
                                     strokes.add(currentStroke);
                                     isCloned = true;
                                 }
@@ -313,8 +339,8 @@ public class CanvasView extends View{
                         invalidate();
                     }
                     if (currentStroke != null && currGestureMode == GestureMode.Rotate) {
-                        Log.d("inside move 33 rorate", currGestureMode.toString());
-                        if (event.getPointerCount() == 2) {
+                        Log.d("inside move 33 rorate", ""+event.getPointerCount());
+                        if (event.getPointerCount() == 4) {
                             float rotateDegree = rotation(event);
                             if (currentStroke instanceof DrawShape) {
                                 drawCanvas.save();
@@ -327,44 +353,60 @@ public class CanvasView extends View{
                         invalidate();
                     }
                     if (currentStroke != null && currGestureMode == GestureMode.Scale) {
-                        Log.d("inside move 44 scale", currGestureMode.toString());
+                        Log.d("inside move 44 scale", " "+event.getPointerCount());
                         //scale shape
                         currScaleDist = spacingScale(event);
                         float scaleIndex = currScaleDist/prevScaleDist;
                         if (currentStroke instanceof Circle) {
-                            Log.d("inside scale 44 Circle"," " + scaleIndex);
+                            //Log.d("inside scale 44 Circle"," " + scaleIndex);
                             ((Circle) currentStroke).updateWithScale(scaleIndex);
                         } else if (currentStroke instanceof Rectangle) {
-                            Log.d("inside scale 44 Circle"," " + scaleIndex);
+                            //Log.d("inside scale 44 Circle"," " + scaleIndex);
                             float updatedH = ((Rectangle) currentStroke).getRect().height() * scaleIndex;
                             float updatedW = ((Rectangle) currentStroke).getRect().width() * scaleIndex;
                             //TODO: This isn't going to work. Call an update method that updates the height
                             // and width.
                             ((Rectangle)currentStroke).updateHeightWidth(updatedH, updatedW);
-                        }invalidate();
+                        }
+                        invalidate();
                     }
-
-                }
-
-                if (event.getPointerCount() >= 2) {
-                    tappedStroke = getTappedShape(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
-                    if (tappedStroke != null) {
-                        Log.d("inside Hold Touch Mode", tappedStroke.toString());
+                    if (event.getPointerCount() == 2) {
+                        currGestureMode = GestureMode.Drag;
+                    } else if (event.getPointerCount() == 3) {
+                        currGestureMode = GestureMode.Rotate;
+                        //Log.d("inside move 3 rorate", currGestureMode.toString());
+                    } else if (event.getPointerCount() == 5) {
+                        currGestureMode = GestureMode.Scale;
+                        //Log.d("inside move 5 scale", currGestureMode.toString());
+                    } else if (event.getPointerCount() == 4) {
+                         currGestureMode = GestureMode.Swipe;
+                         lastSwipeY1 = event.getY(0);
+                         lastSwipeY2 = event.getY(1);
+                         lastSwipeY3 = event.getY(2);
+                         lastSwipeY4 = event.getY(3);
                     }
-                }
-                if (currGestureMode == GestureMode.Drag) {
+                    invalidate();
                 }
                 if (event.getPointerCount() == 4) {
-                    currGestureMode = GestureMode.Rotate;
-                    Log.d("inside move 3 rorate", currGestureMode.toString());
+                    lastSwipeY1 = event.getY(0);
+                    lastSwipeY2 = event.getY(1);
+                    lastSwipeY3 = event.getY(2);
+                    lastSwipeY4 = event.getY(3);
+                    if ((lastSwipeY1 > prevSwipeY1) && (lastSwipeY2 > prevSwipeY2) &&
+                            (lastSwipeY3 > prevSwipeY3) && (lastSwipeY4 > prevSwipeY4)) {
+                        currGestureMode = GestureMode.Swipe;
+                    }
                 }
-                if (event.getPointerCount() == 5) {
-                    currGestureMode = GestureMode.Scale;
-                    Log.d("inside move 5 scale", currGestureMode.toString());
-                }
-                invalidate();
                 break;
             case MotionEvent.ACTION_UP:
+                if (currGestureMode != null) {
+                    Log.d("3. Action Up: ", currGestureMode.toString() + event.getPointerCount());
+                } else {
+                    Log.d("3. Action Up", " " + event.getPointerCount());
+                }
+                if (currTouchMode != null) {
+                    Log.d("3. Action Up", currTouchMode.toString() + event.getPointerCount());
+                }
                 if (currTouchMode == TouchMode.SingleFingerDraw) {
                     upTouch(x, y);
                 } else if (currTouchMode == TouchMode.PerfectionWait) {
@@ -378,19 +420,41 @@ public class CanvasView extends View{
                     }
                     currentStroke = null;
                 }
+                if (currGestureMode == GestureMode.Swipe) {
+                    Log.d("inside Swipe", " " + event.getPointerCount());
+                    lastSwipeY1 = event.getY(0);
+                    if ((lastSwipeY1 > prevSwipeY1 + SWIPE_TOLERANCE) &&
+                            (lastSwipeY2 > prevSwipeY2 + SWIPE_TOLERANCE)
+                            && (lastSwipeY1 > prevSwipeY2 + SWIPE_TOLERANCE) &&
+                            (lastSwipeY3 > prevSwipeY3 + SWIPE_TOLERANCE)){
+                        clearCanvas();
+                    }
+
+                }
+
                 resetPaint();
                 invalidate();
                 break;
             case MotionEvent.ACTION_OUTSIDE:
+                if (currGestureMode != null) {
+                    Log.d("4. Outside: ", currGestureMode.toString() + event.getPointerCount());
+                } else {
+                    Log.d("4. Outside: ", " " + event.getPointerCount());
+                }
+                if (currTouchMode != null) {
+                    Log.d("4. Outside: ", currTouchMode.toString() + event.getPointerCount());
+                }
                 upTouch(x, y);
                 invalidate();
                 break;
             case MotionEvent.ACTION_POINTER_DOWN:
                 if (currGestureMode != null) {
-                    Log.d("number of Pointer Down", currGestureMode.toString() + event.getPointerCount());
+                    Log.d("5. Pointer Down: ", currGestureMode.toString() + event.getPointerCount());
+                } else {
+                    Log.d("5. Pointer Down: ", " " + event.getPointerCount());
                 }
                 if (currTouchMode != null) {
-                    Log.d("number of Pointer Down", currTouchMode.toString() + event.getPointerCount());
+                    Log.d("5. Pointer Down: ", currTouchMode.toString() + event.getPointerCount());
                 }
                 if (currTouchMode == TouchMode.SingleFingerDraw) {
                     currTouchMode = TouchMode.TwoFingerWait;
@@ -427,13 +491,21 @@ public class CanvasView extends View{
                 }
                 break;
             case MotionEvent.ACTION_POINTER_UP:
+                if (currGestureMode != null) {
+                    Log.d("6. Pointer Up: ", currGestureMode.toString() + event.getPointerCount());
+                } else {
+                    Log.d("6. Pointer Up: ", " " + event.getPointerCount());
+                }
+                if (currTouchMode != null) {
+                    Log.d("6. Pointer Up: ", currTouchMode.toString() + event.getPointerCount());
+                }
                 if (currTouchMode == TouchMode.Perfection) {
                     currTouchMode = TouchMode.PerfectionWait;
                 } else if (currTouchMode == TouchMode.TwoFingerWait) {
                     currTouchMode = TouchMode.SingleFingerDraw;
                 }
                 if (currGestureMode == GestureMode.Clone) {
-                    Log.d("action up", "inside clone");
+                    //Log.d("action up", "inside clone");
                     if (clonedCircle != null) {
                         drawCanvas.drawPath(clonedCircle.getDrawPath(),drawPaint);
                         strokes.add(clonedCircle);
@@ -523,8 +595,8 @@ public class CanvasView extends View{
 
     //calculate the degree to be rotated by
     private float rotation(MotionEvent event) {
-        double delta_x = (event.getX(0) - event.getX(1));
-        double delta_y = (event.getY(0) - event.getY(1));
+        double delta_x = (event.getX(3) - event.getX(2));
+        double delta_y = (event.getY(3) - event.getY(2));
         double radians = Math.atan2(delta_x, delta_y);
         return (float) Math.toDegrees(radians);
     }
@@ -632,7 +704,7 @@ public class CanvasView extends View{
         for (int i = strokes.size() - 1; i >= 0; i--) {
             Stroke thisStroke = strokes.get(i);
             if (thisStroke.containsTap(x1, y1, x2, y2)) {
-                Log.d("inside getTapped",thisStroke.toString());
+                //Log.d("inside getTapped",thisStroke.toString());
                 return thisStroke;
             };
         }
@@ -654,6 +726,11 @@ public class CanvasView extends View{
         @Override
         public boolean onSingleTapUp(MotionEvent e) {
             return false;
+        }
+
+        public boolean onDoubleTapEvent(MotionEvent e) {
+            return true;
+
         }
 
         @Override
