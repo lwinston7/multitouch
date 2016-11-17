@@ -1,11 +1,9 @@
 package multitouch.multitouchapp;
 
 import android.annotation.TargetApi;
-import android.graphics.Matrix;
 import android.graphics.Path;
 import android.graphics.PathMeasure;
-import android.graphics.Point;
-import android.graphics.RectF;
+import android.graphics.PointF;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -59,26 +57,30 @@ public class DrawPath extends Stroke {
     }
 
     @Override
-    public boolean containsTap(float x1, float y1, float x2, float y2) {
+    protected boolean containsTap(float x1, float y1, float x2, float y2) {
         return false;
     }
 
     @Override
     public float distanceFromTap(float x1, float y1, float x2, float y2) {
-        Point midpoint = new Point((int) (x1 + x2 / 2f), (int) (y1 + y2 / 2f));
-        float minDistance = Integer.MAX_VALUE;
-        PathMeasure pm = new PathMeasure(drawPath, false);
-        float len = 0;
-        while (len < pm.getLength()) {
-            float[] coordinates = {0f, 0f};
-            pm.getPosTan(len, coordinates, null);
-            float distance = (float) distance(midpoint, new Point((int)coordinates[0], (int)coordinates[1]));
-            if (distance < minDistance) {
-                minDistance = distance;
+        if (containsTap(x1, y1, x2, y2)) {
+            return 0;
+        } else {
+            float minDistance = Integer.MAX_VALUE;
+            PointF midpoint = new PointF((x1 + x2 / 2f), (y1 + y2 / 2f));
+            PathMeasure pm = new PathMeasure(drawPath, false);
+            float len = 0;
+            while (len < pm.getLength()) {
+                float[] coordinates = {0f, 0f};
+                pm.getPosTan(len, coordinates, null);
+                float distance = (float) distance(midpoint, new PointF(coordinates[0], coordinates[1]));
+                if (distance < minDistance) {
+                    minDistance = distance;
+                }
+                len += pm.getLength() * SUBDIVIDE_THRESHOLD;
             }
-            len += pm.getLength() * SUBDIVIDE_THRESHOLD;
+            return minDistance;
         }
-        return minDistance;
     }
 
     @Override
@@ -89,8 +91,8 @@ public class DrawPath extends Stroke {
     }
 
     @Override
-    public void move(Point p0, Point p1) {
-        Point midpoint = new Point((int) (p0.x + p1.x / 2f), (int) (p0.y + p1.y / 2f));
+    public void move(PointF p0, PointF p1) {
+        PointF midpoint = new PointF((p0.x + p1.x) / 2f, (p0.y + p1.y) / 2f);
         float minDistance = Integer.MAX_VALUE;
         float currDistance = (float) distance(p0, p1);
         float pastDistance = (float) distance(this.p0Past, this.p1Past);
@@ -99,9 +101,9 @@ public class DrawPath extends Stroke {
         // If delta distance is significant, move with p0. Otherwise, move with the midpoint.
         //TODO: Increase distance.
         //Use pm.getSegment() to manipulate the line.
-        if (Math.abs(deltaDistance) > MINIMUM_DELTA_FINGER_DISTANCE) {
+       /* if (Math.abs(deltaDistance) > MINIMUM_DELTA_FINGER_DISTANCE) {
             // TODO: Add line manipulation here.
-            ArrayList<Point> points = new ArrayList<Point>();
+            ArrayList<PointF> points = new ArrayList<PointF>();
             int minPoint = 0;
             PathMeasure pm = new PathMeasure(drawPath, false);
             float len = 0;
@@ -109,7 +111,7 @@ public class DrawPath extends Stroke {
             while (len < pm.getLength()) {
                 float[] coordinates = {0f, 0f};
                 pm.getPosTan(len, coordinates, null);
-                Point pt = new Point((int) coordinates[0], (int) coordinates[1]);
+                PointF pt = new PointF(coordinates[0], coordinates[1]);
                 float distance = (float) distance(midpoint, pt);
                 if (distance < minDistance) {
                     minDistance = distance;
@@ -126,9 +128,9 @@ public class DrawPath extends Stroke {
             this.p0Past = p0;
             this.p1Past = p1;
             return;
-        }
+        }*/
 
-        move((p0.x + p1.x) / 2f, (p1.y + p0.y) / 2f);
+        move((p0.x + p1.x) / 2, (p1.y + p0.y) / 2);
         this.p0Past = p0;
         this.p1Past = p1;
     }
@@ -138,8 +140,8 @@ public class DrawPath extends Stroke {
         moveX = x;
         moveY = y;
         // TODO: (Lauren) This should be the actual points, not the same x, y.
-        p0Past = new Point((int)x, (int)y);
-        p1Past = new Point((int)x, (int)y);
+        p0Past = new PointF(x, y);
+        p1Past = new PointF(x, y);
     }
 
     @Override

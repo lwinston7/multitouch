@@ -2,8 +2,7 @@ package multitouch.multitouchapp;
 
 import android.annotation.TargetApi;
 import android.graphics.Path;
-import android.graphics.Point;
-import android.util.Log;
+import android.graphics.PointF;
 
 /**
  * Defines a "perfect" path or shape.
@@ -50,6 +49,11 @@ public class PerfectStroke extends Stroke{
         return mPerfectStroke.getDrawPath();
     }
 
+    @Override
+    protected boolean containsTap(float x1, float y1, float x2, float y2) {
+        return mPerfectStroke.containsTap(x1, y1, x2, y2);
+    }
+
     public Stroke getPerfectStroke() {
         return mPerfectStroke;
     }
@@ -71,11 +75,6 @@ public class PerfectStroke extends Stroke{
     }
 
     @Override
-    public boolean containsTap(float x1, float y1, float x2, float y2) {
-        return mPerfectStroke.containsTap(x1, y1, x2, y2);
-    }
-
-    @Override
     public float distanceFromTap(float x1, float y1, float x2, float y2) {
         return mPerfectStroke.distanceFromTap(x1, y1, x2, y2);
     }
@@ -85,7 +84,7 @@ public class PerfectStroke extends Stroke{
     }
 
     @Override
-    public void move(Point p0, Point p1) {
+    public void move(PointF p0, PointF p1) {
         mPerfectStroke.move(p0, p1);
     }
 

@@ -8,10 +8,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.Point;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -27,7 +25,7 @@ import static android.view.ViewConfiguration.getLongPressTimeout;
 
 public class CanvasView extends View{
 
-    private final int MAXIMUM_DRAG_DISTANCE = 300;
+    private final int MAXIMUM_DRAG_DISTANCE = 1000;
     private final int MINIMUM_MOVE_DISTANCE = 10;
     private Bitmap canvasBitmap;
     private Canvas drawCanvas;
@@ -243,12 +241,14 @@ public class CanvasView extends View{
                         // TODO: Add a check to make sure that they haven't been moved for too long?
                         if (event.getPointerCount() >= 2) {
                             if (currentStroke != null && !currentStroke.isStrayStroke()) {
+                                Log.d("stray", "uptouch");
                                 upTouch(event.getX(1), event.getY(1));
                             }
 
                             currentStroke = popNearestStroke(event.getX(0), event.getY(0), event.getX(1), event.getY(1));
                         }
                         if (currentStroke != null) {
+                            Log.d("distance", "holding");
                             currTouchMode = TouchMode.Hold;
                             currentStroke.startMove(x, y);
                             invalidate();
@@ -272,8 +272,8 @@ public class CanvasView extends View{
                     if (currentStroke != null && currGestureMode == GestureMode.Drag) {
                         Log.d("drag", event.getPointerCount() + "");
                         if (event.getPointerCount() >= 2) {
-                            Point p0 = new Point((int) event.getX(0), (int) event.getY(0));
-                            Point p1 = new Point((int) event.getX(1), (int) event.getY(1));
+                            PointF p0 = new PointF(event.getX(0), event.getY(0));
+                            PointF p1 = new PointF(event.getX(1), event.getY(1));
                             //change here
                             currentStroke.move(p0, p1);
                             if (currentStroke instanceof DrawShape && ((DrawShape) currentStroke).getIsFilled()) {
@@ -631,6 +631,7 @@ public class CanvasView extends View{
     public Stroke getTappedShape(float x1, float y1, float x2, float y2) {
         for (int i = strokes.size() - 1; i >= 0; i--) {
             Stroke thisStroke = strokes.get(i);
+            // TODO: This isn't going to work if strokes are on top of one another.
             if (thisStroke.containsTap(x1, y1, x2, y2)) {
                 Log.d("inside getTapped",thisStroke.toString());
                 return thisStroke;
