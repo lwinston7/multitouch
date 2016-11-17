@@ -428,8 +428,8 @@ public class CanvasView extends View{
                             && (lastSwipeY1 > prevSwipeY2 + SWIPE_TOLERANCE) &&
                             (lastSwipeY3 > prevSwipeY3 + SWIPE_TOLERANCE)){
                         clearCanvas();
+                        currGestureMode = null;
                     }
-
                 }
 
                 resetPaint();
