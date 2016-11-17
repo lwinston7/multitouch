@@ -132,7 +132,10 @@ public class CanvasView extends View{
 
         //TODO: Offset by mScrollX and mScrollY if needed.
             if (currentStroke != null && currentDrawMode != DrawMode.Erase) {
+                Log.d("empty", "attempting to draw stroke");
                 canvas.drawPath(currentStroke.getDrawPath(), drawPaint);
+            } else {
+                Log.d("empty", "stroke is null");
             }
     }
 
@@ -275,21 +278,23 @@ public class CanvasView extends View{
                             Log.d("distance", "holding");
                             currTouchMode = TouchMode.Hold;
                             currentStroke.startMove(x, y);
-                            invalidate();
                         } else {
                             mLastFingerDown = System.currentTimeMillis();
                         }
-                    } else {
+                    } /*else {
                         if (currentStroke != null) {
                             moveTouch(x, y);
+                            invalidate();
                         }
-                    }
+                    }*/
                 } else if (currTouchMode == TouchMode.SingleFingerDraw) {
                     if (currentStroke != null) {
                         moveTouch(x, y);
+                        invalidate();
                     }
                 } else if (currTouchMode == TouchMode.Perfection) {
                     moveTouch(event.getX(1), event.getY(1));
+                    invalidate();
                 } else if (currTouchMode == TouchMode.Hold) {
                     //Log.d("inside move hold 1", currGestureMode.toString());
                     //add a condition here
@@ -307,6 +312,7 @@ public class CanvasView extends View{
                         } else {
                             currentStroke.move(x, y);
                         }
+                        invalidate();
                     }
                     if (currentStroke != null && currGestureMode == GestureMode.Clone) {
                         Log.d("inside move 22 clone", " " + event.getPointerCount());
