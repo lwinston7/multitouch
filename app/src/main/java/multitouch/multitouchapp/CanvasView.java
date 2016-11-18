@@ -60,7 +60,7 @@ public class CanvasView extends View{
     private int mActivePointer1Id = -10;
     private int tapClickCount;
     private long tapStartTime,tapDuration;
-    static final long ONE_SECOND = 1000;
+    static final long HALF_SECOND = 500;
 
     private static final float SWIPE_TOLERANCE = 50;
 
@@ -434,8 +434,8 @@ public class CanvasView extends View{
                     tapStartTime = System.currentTimeMillis();
                 } else if(tapClickCount == 2) {
                     tapDuration = System.currentTimeMillis() - tapStartTime;
-                    if (tapDuration <= ONE_SECOND) {
-                        Log.d("tapCount", ""+event.getPointerCount());
+                    if (tapDuration <= HALF_SECOND) {
+                        Log.d("tapCount", " "+ tapDuration);
                         float tapX = event.getX(0);
                         float tapY = event.getY(0);
                         Log.d("inside tap1", " " + strokes.size());
@@ -449,7 +449,6 @@ public class CanvasView extends View{
                         tapClickCount = 1;
                         tapStartTime = System.currentTimeMillis();
                     }
-                    break;
                 }
                 if (currGestureMode == GestureMode.Swipe) {
                     Log.d("inside Swipe", " " + event.getPointerCount());
@@ -462,7 +461,6 @@ public class CanvasView extends View{
                         currGestureMode = null;
                     }
                 }
-
                 resetPaint();
                 invalidate();
                 break;
