@@ -35,42 +35,4 @@ public class MultitouchGestureDetector extends GestureDetector{
 
         return false;
     }
-
-    public boolean onResizeEvent(MotionEvent motionEvent) {
-        if (motionEvent.getPointerCount() > 4) {
-            // TODO: Check to see if pointers are growing or shrinking.
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public boolean onCloneEvent(MotionEvent motionEvent) {
-        if (motionEvent.getPointerCount() > 4) {
-            // TODO: Check to see if pointers are growing or shrinking.
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public boolean onRotateEvent(MotionEvent motionEvent) {
-        if (motionEvent.getPointerCount() > 4) {
-            // TODO: Check to see if pointers are growing or shrinking.
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public boolean onMoveEvent(MotionEvent motionEvent) {
-        if (motionEvent.getPointerCount() > 4) {
-            // TODO: Check to see if pointers are growing or shrinking.
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-
 }
