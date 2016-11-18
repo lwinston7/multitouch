@@ -46,9 +46,9 @@ public abstract class Stroke {
     public abstract void finishStroke(float x, float y);
     public abstract Path getDrawPath();
 
-    protected abstract boolean containsTap(float x1, float y1, float x2, float y2);
+    protected abstract boolean containsTap(float x, float y);
 
-    public abstract float distanceFromTap(float x1, float y1, float x2, float y2);
+    public abstract float distanceFromTap(float x, float y);
 
     // Translate the stroke by dx and dy.
     public abstract void move(float dx, float dy);

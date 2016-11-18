@@ -47,9 +47,7 @@ public abstract class DrawShape extends Stroke {
     }
 
     @Override
-    protected boolean containsTap(float x1, float y1, float x2, float y2) {
-        float x = (x1 + x2) / 2f;
-        float y = (y1 + y2) / 2f;
+    protected boolean containsTap(float x, float y) {
         Path drawPath = getDrawPath();
         RectF bounds = new RectF();
         drawPath.computeBounds(bounds, false);
@@ -60,11 +58,9 @@ public abstract class DrawShape extends Stroke {
     }
 
     @Override
-    public float distanceFromTap(float x1, float y1, float x2, float y2) {
-        float midX = (x1 + x2) / 2;
-        float midY = (y1 + y2) / 2;
-        PointF pt = new PointF(midX, midY);
-        if (containsTap(x1, y1, x2, y2)) {
+    public float distanceFromTap(float x, float y) {
+        PointF pt = new PointF(x, y);
+        if (containsTap(x, y)) {
             return 0;
         } else {
             Path drawPath = getDrawPath();

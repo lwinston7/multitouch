@@ -50,8 +50,8 @@ public class PerfectStroke extends Stroke{
     }
 
     @Override
-    protected boolean containsTap(float x1, float y1, float x2, float y2) {
-        return mPerfectStroke.containsTap(x1, y1, x2, y2);
+    protected boolean containsTap(float x, float y) {
+        return mPerfectStroke.containsTap(x, y);
     }
 
     public Stroke getPerfectStroke() {
@@ -75,8 +75,8 @@ public class PerfectStroke extends Stroke{
     }
 
     @Override
-    public float distanceFromTap(float x1, float y1, float x2, float y2) {
-        return mPerfectStroke.distanceFromTap(x1, y1, x2, y2);
+    public float distanceFromTap(float x, float y) {
+        return mPerfectStroke.distanceFromTap(x, y);
     }
 
     public  void move(float dx, float dy) {

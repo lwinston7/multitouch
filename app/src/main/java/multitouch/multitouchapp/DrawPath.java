@@ -57,17 +57,17 @@ public class DrawPath extends Stroke {
     }
 
     @Override
-    protected boolean containsTap(float x1, float y1, float x2, float y2) {
+    protected boolean containsTap(float x, float y) {
         return false;
     }
 
     @Override
-    public float distanceFromTap(float x1, float y1, float x2, float y2) {
-        if (containsTap(x1, y1, x2, y2)) {
+    public float distanceFromTap(float x, float y) {
+        if (containsTap(x, y)) {
             return 0;
         } else {
             float minDistance = Integer.MAX_VALUE;
-            PointF midpoint = new PointF((x1 + x2 / 2f), (y1 + y2 / 2f));
+            PointF midpoint = new PointF(x, y);
             PathMeasure pm = new PathMeasure(drawPath, false);
             float len = 0;
             while (len < pm.getLength()) {
