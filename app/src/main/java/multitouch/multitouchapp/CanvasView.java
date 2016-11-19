@@ -551,10 +551,14 @@ public class CanvasView extends View{
 
     //calculate the degree to be rotated by
     private float rotation(MotionEvent event) {
-        double delta_x = (event.getX(1) - event.getX(0));
-        double delta_y = (event.getY(1) - event.getY(0));
-        double radians = Math.atan2(delta_x, delta_y);
-        return (float) Math.toDegrees(radians);
+        if (event.getPointerCount() >= 2) {
+            double delta_x = (event.getX(1) - event.getX(0));
+            double delta_y = (event.getY(1) - event.getY(0));
+            double radians = Math.atan2(delta_x, delta_y);
+            return (float) Math.toDegrees(radians);
+        }
+
+        return  0;
     }
 
     private float spacingScale(MotionEvent event) {
