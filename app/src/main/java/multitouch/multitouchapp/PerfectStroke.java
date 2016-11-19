@@ -97,4 +97,9 @@ public class PerfectStroke extends Stroke{
     public boolean isStrayStroke() {
         return false;
     }
+
+    @Override
+    public Stroke clone() {
+        return new PerfectStroke();
+    }
 }

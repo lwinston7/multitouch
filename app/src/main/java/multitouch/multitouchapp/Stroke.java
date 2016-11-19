@@ -15,6 +15,11 @@ public abstract class Stroke {
     protected PointF p0Past, p1Past;
     protected static final float TOLERANCE = 1;
 
+    protected void set(int color, float size) {
+        mColor = color;
+        mSize = size;
+    }
+
     // The minimum change in distance between two fingers that will register a change.
     protected final float MINIMUM_DELTA_FINGER_DISTANCE = 10f;
     protected final float LOCKED_DELTA_FINGER_DISTANCE = 5f;
@@ -62,5 +67,6 @@ public abstract class Stroke {
     }
 
     public abstract boolean isStrayStroke();
+    public abstract Stroke clone();
 
 }

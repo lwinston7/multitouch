@@ -89,4 +89,10 @@ public abstract class DrawShape extends Stroke {
             return (float) Math.abs(distance);
         }
     }
+
+    protected void set(int color, float size, boolean isFilled, int transparency) {
+        super.set(color, size);
+        this.mIsFilled = isFilled;
+        this.mTransparency = transparency;
+    }
 }

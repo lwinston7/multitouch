@@ -12,6 +12,12 @@ public class Rectangle extends DrawShape{
     private float left, top;
     private float moveX, moveY;
 
+    public Rectangle() {}
+    public Rectangle(RectF rect, float left, float top) {
+        this.rect = rect;
+        this.left = left;
+        this.top = top;
+    }
 
     @Override
     public void startStroke(float x, float y) {
@@ -72,6 +78,13 @@ public class Rectangle extends DrawShape{
     @Override
     public boolean isStrayStroke() {
         return rect.width() < FINGER_PIXELS || rect.height() < FINGER_PIXELS;
+    }
+
+    @Override
+    public Stroke clone() {
+        Rectangle r = new Rectangle(new RectF(left, top, rect.right, rect.bottom), left, top);
+        r.set(mColor, mSize, mIsFilled, mTransparency);
+        return r;
     }
 
     public RectF getRect() {

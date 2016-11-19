@@ -23,6 +23,11 @@ public class DrawPath extends Stroke {
     protected float moveX = 0;
     protected float moveY = 0;
     protected final float SUBDIVIDE_THRESHOLD = .01f;
+    public DrawPath() {}
+    public DrawPath(Path drawPath) {
+        this.drawPath = drawPath;
+    }
+
 
     @Override
     public void startStroke(float x, float y) {
@@ -154,5 +159,10 @@ public class DrawPath extends Stroke {
         } else {
             return false;
         }
+    }
+
+    @Override
+    public Stroke clone() {
+        return new DrawPath(new Path(drawPath));
     }
 }
