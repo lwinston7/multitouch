@@ -18,6 +18,9 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.util.TypedValue;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import android.graphics.PointF;
 import android.util.Log;
 import static android.view.ViewConfiguration.getLongPressTimeout;
@@ -64,6 +67,8 @@ public class CanvasView extends View{
     static final long HALF_SECOND = 500;
 
     private static final float SWIPE_TOLERANCE = 50;
+
+    private Timer longPressTimer;
 
     private enum DrawMode {
         Line,
@@ -273,7 +278,7 @@ public class CanvasView extends View{
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent event) {
+    public boolean onTouchEvent(final MotionEvent event) {
         //Draw normally
         float x = event.getX();
         float y = event.getY();
@@ -291,8 +296,9 @@ public class CanvasView extends View{
                 }
                 if (currTouchMode == TouchMode.OneFingerWait) {
                     currTouchMode = TouchMode.Drag;
+                }
 
-                } else if (currTouchMode == TouchMode.SingleFingerDraw) {
+                if (currTouchMode == TouchMode.SingleFingerDraw) {
                     if (currentStroke != null) {
                         moveTouch(x, y);
                         invalidate();
@@ -425,6 +431,19 @@ public class CanvasView extends View{
                 if (currTouchMode == TouchMode.SingleFingerDraw) {
                     currTouchMode = TouchMode.TwoFingerWait;
                     mLastFingerDown = System.currentTimeMillis();
+                    longPressTimer = new Timer();
+                    longPressTimer.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            MainActivity mainActivity = (MainActivity) context;
+                            mainActivity.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    checkForTwoFingerLongPress(event);
+                                }
+                            });
+                        }
+                    }, getLongPressTimeout());
                 } else if (currTouchMode == TouchMode.PerfectionWait) {
                     // Attempt to make perfect stroke
                     currentStroke = new PerfectStroke();
@@ -594,6 +613,7 @@ public class CanvasView extends View{
     private void checkForTwoFingerLongPress(MotionEvent event) {
         if (currTouchMode == TouchMode.TwoFingerWait) {
             if (System.currentTimeMillis() - mLastFingerDown >= getLongPressTimeout()) {
+                longPressTimer.cancel();
                 // TODO: Only work if you're not touching another stroke.
                 PointF midpoint = new PointF((event.getX(0) + event.getX(1)) / 2f,
                         (event.getY() + event.getY()) / 2f);
@@ -602,12 +622,12 @@ public class CanvasView extends View{
                         strokes.get(pressedIndex).containsTap(midpoint.x, midpoint.y)) {
                     currentStroke = popNearestStroke(midpoint.x, midpoint.y);
                     currTouchMode = TouchMode.ColorWait;
-                    Log.d("colorWait", "color wait");
                 } else {
                     currTouchMode = TouchMode.PerfectionWait;
-                    Log.d("colorWait", "perfection wait");
                     currentStroke = null;
                 }
+
+                invalidate();
             }
         }
     }
