@@ -34,6 +34,7 @@ public abstract class DrawShape extends Stroke {
 
     @Override
     public void adjustColor(PointF p0, PointF p1, PointF p2) {
+        // TODO: Manage these points better.
         PointF midpoint = new PointF();
         PointF dragPoint = new PointF();
         if (containsTap(p0.x, p0.y) && containsTap(p1.x, p1.y) && !containsTap(p2.x, p2.y)) {
@@ -64,6 +65,7 @@ public abstract class DrawShape extends Stroke {
     }
 
     public void setColorAdjustmentPoints(PointF p0, PointF p1) {
+        // TODO: Move this to Stroke.
         this.p0Past = p0;
         this.p1Past = p1;
     }
