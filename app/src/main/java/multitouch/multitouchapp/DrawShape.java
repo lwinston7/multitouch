@@ -33,27 +33,39 @@ public abstract class DrawShape extends Stroke {
 
 
     @Override
-    public void move(PointF p0, PointF p1) {
-        if (p0Past != null&& p1Past != null) {
-            float currDistance = (float) distance(p0, p1);
-            float pastDistance = (float) distance(this.p0Past, this.p1Past);
-            float p0Distance = (float) distance(p0, this.p0Past);
-            float p1Distance = (float) distance(p1, this.p1Past);
-            float deltaDistance = currDistance - pastDistance;
-            if (Math.abs(currDistance) > 250 || (Math.abs(p0Distance) > MINIMUM_DELTA_FINGER_DISTANCE && Math.abs(p1Distance) < LOCKED_DELTA_FINGER_DISTANCE) ||
+    public void adjustColor(PointF p0, PointF p1, PointF p2) {
+        PointF midpoint = new PointF();
+        PointF dragPoint = new PointF();
+        if (containsTap(p0.x, p0.y) && containsTap(p1.x, p1.y) && !containsTap(p2.x, p2.y)) {
+            midpoint = new PointF((p0.x + p1.x) / 2f, (p0.y + p1.y) / 2f);
+            dragPoint = new PointF(p2.x, p2.y);
+        } else if (!containsTap(p0.x, p0.y) && containsTap(p1.x, p1.y) && containsTap(p2.x, p2.y)) {
+            midpoint = new PointF((p2.x + p1.x) / 2f, (p2.y + p1.y) / 2f);
+            dragPoint = new PointF(p0.x, p0.y);
+        } else if (containsTap(p0.x, p0.y) && !containsTap(p1.x, p1.y) && containsTap(p2.x, p2.y)) {
+            midpoint = new PointF((p0.x + p2.x) / 2f, (p0.y + p2.y) / 2f);
+            dragPoint = new PointF(p1.x, p1.y);
+        }
+
+        float currDistance = (float) distance(midpoint, dragPoint);
+        float pastDistance = (float) distance(this.p0Past, this.p1Past);
+        float p0Distance = (float) distance(midpoint, this.p0Past);
+        float p1Distance = (float) distance(dragPoint, this.p1Past);
+        float deltaDistance = currDistance - pastDistance;
+        if (Math.abs(currDistance) > 250 || (Math.abs(p0Distance) > MINIMUM_DELTA_FINGER_DISTANCE && Math.abs(p1Distance) < LOCKED_DELTA_FINGER_DISTANCE) ||
                 (Math.abs(p1Distance) > MINIMUM_DELTA_FINGER_DISTANCE && Math.abs(p0Distance) < LOCKED_DELTA_FINGER_DISTANCE) ||
                     Math.abs(deltaDistance) > 50) {
                 mIsFilled = true;
                 mTransparency = (int) Math.min(Math.max(mTransparency + deltaDistance, MINIMUM_TRANSPARENCY), 255);
-                p0Past = p0;
-                p1Past = p1;
-                return;
             }
-        }
 
-        move((p0.x + p1.x) / 2f, (p1.y + p0.y) / 2f);
         p0Past = p0;
         p1Past = p1;
+    }
+
+    public void setColorAdjustmentPoints(PointF p0, PointF p1) {
+        this.p0Past = p0;
+        this.p1Past = p1;
     }
 
     @Override

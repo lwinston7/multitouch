@@ -87,6 +87,8 @@ public class CanvasView extends View{
         TwoFingerWait, // 2-Finger Wait for other movement
         PerfectionWait, // Wait for the 3rd pointer down
         Perfection, // Creating a new perfect stroke
+        ColorWait,
+        Color,
         PerfectionToggle,
         Cloning,
         RotateResize,
@@ -271,7 +273,7 @@ public class CanvasView extends View{
                 break;
             case MotionEvent.ACTION_MOVE:
                 if (currTouchMode == TouchMode.TwoFingerWait) {
-                    checkForTwoFingerLongPress();
+                    checkForTwoFingerLongPress(event);
                 }
                 if (currTouchMode == TouchMode.OneFingerWait) {
                     if (event.getPointerCount() == 1) {
@@ -308,20 +310,24 @@ public class CanvasView extends View{
                         clonedStroke.move(cloneX, cloneY);
                     }
                     invalidate();
+                } else if (currTouchMode == TouchMode.Color) {
+                        Log.d("colorWait", "ajdusting color");
+                    if (event.getPointerCount() == 3) {
+                        PointF p0 = new PointF(event.getX(0), event.getY(0));
+                        PointF p1 = new PointF(event.getX(1), event.getY(1));
+                        PointF p2 = new PointF(event.getX(2), event.getY(2));
+                        //change here
+                        currentStroke.adjustColor(p0, p1, p2);
+                        if (currentStroke instanceof DrawShape && ((DrawShape) currentStroke).getIsFilled()) {
+                            drawPaint.setStyle(Paint.Style.FILL);
+                            drawPaint.setAlpha(((DrawShape) currentStroke).getTransparency());
+                        }
+
+                        invalidate();
+                    }
                 } else if (currTouchMode == TouchMode.Drag) {
                     if (currentStroke != null) {
-                        if (event.getPointerCount() == 2) {
-                            PointF p0 = new PointF(event.getX(0), event.getY(0));
-                            PointF p1 = new PointF(event.getX(1), event.getY(1));
-                            //change here
-                            currentStroke.move(p0, p1);
-                            if (currentStroke instanceof DrawShape && ((DrawShape) currentStroke).getIsFilled()) {
-                                drawPaint.setStyle(Paint.Style.FILL);
-                                drawPaint.setAlpha(((DrawShape) currentStroke).getTransparency());
-                            }
-                        } else {
-                            currentStroke.move(x, y);
-                        }
+                        currentStroke.move(x, y);
                         invalidate();
                     }
                 } else if (currTouchMode == TouchMode.RotateResize) {
@@ -412,7 +418,7 @@ public class CanvasView extends View{
             case MotionEvent.ACTION_POINTER_DOWN:
                 // TODO: Check to see if other finger has been held for a long enough time.
                 if (currTouchMode == TouchMode.TwoFingerWait) {
-                    checkForTwoFingerLongPress();
+                    checkForTwoFingerLongPress(event);
                 }
 
                 if (currTouchMode == TouchMode.SingleFingerDraw) {
@@ -449,6 +455,13 @@ public class CanvasView extends View{
                 } else if (currTouchMode == TouchMode.RotateResize) {
                     Log.d("resize", "re pointer");
                     prevScaleDist = spacingScale(event);
+                } else if (currTouchMode == TouchMode.ColorWait) {
+                    Log.d("colorWait", "draggin");
+                    PointF midpoint = new PointF((event.getX(0) + event.getX(0)) / 2f,
+                            (event.getY(1) + event.getY(1)) / 2f);
+                    PointF drag = new PointF(event.getX(2), event.getY(2));
+                    ((DrawShape)currentStroke).setColorAdjustmentPoints(midpoint, drag);
+                    currTouchMode = TouchMode.Color;
                 }
                 break;
             case MotionEvent.ACTION_POINTER_UP:
@@ -469,6 +482,8 @@ public class CanvasView extends View{
                         currTouchMode = TouchMode.FinishedGesture;
                     }
                     invalidate();
+                } else if (currTouchMode == TouchMode.ColorWait) {
+                } else if (currTouchMode == TouchMode.Color) {
                 } else if (currTouchMode == TouchMode.RotateResize) {
                 } else {
                     currTouchMode = TouchMode.SingleFingerDraw;
@@ -575,13 +590,23 @@ public class CanvasView extends View{
         return (float)1.0;
     }
 
-    private void checkForTwoFingerLongPress() {
+    private void checkForTwoFingerLongPress(MotionEvent event) {
         if (currTouchMode == TouchMode.TwoFingerWait) {
             if (System.currentTimeMillis() - mLastFingerDown >= getLongPressTimeout()) {
                 // TODO: Only work if you're not touching another stroke.
-                Log.d("perfection", "making perfection");
-                currTouchMode = TouchMode.PerfectionWait;
-                currentStroke = null;
+                PointF midpoint = new PointF((event.getX(0) + event.getX(1)) / 2f,
+                        (event.getY() + event.getY()) / 2f);
+                int pressedIndex = findNearestStrokeIndex(midpoint.x, midpoint.y);
+                if (pressedIndex >= 0 &&
+                        strokes.get(pressedIndex).containsTap(midpoint.x, midpoint.y)) {
+                    currentStroke = popNearestStroke(midpoint.x, midpoint.y);
+                    currTouchMode = TouchMode.ColorWait;
+                    Log.d("colorWait", "color wait");
+                } else {
+                    currTouchMode = TouchMode.PerfectionWait;
+                    Log.d("colorWait", "perfection wait");
+                    currentStroke = null;
+                }
             }
         }
     }

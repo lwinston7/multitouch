@@ -84,8 +84,8 @@ public class PerfectStroke extends Stroke{
     }
 
     @Override
-    public void move(PointF p0, PointF p1) {
-        mPerfectStroke.move(p0, p1);
+    public void adjustColor(PointF p0, PointF p1, PointF p2) {
+        mPerfectStroke.adjustColor(p0, p1, p2);
     }
 
     @Override

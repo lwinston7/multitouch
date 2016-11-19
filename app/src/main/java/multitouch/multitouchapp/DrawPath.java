@@ -96,7 +96,7 @@ public class DrawPath extends Stroke {
     }
 
     @Override
-    public void move(PointF p0, PointF p1) {
+    public void adjustColor(PointF p0, PointF p1, PointF p2) {
         PointF midpoint = new PointF((p0.x + p1.x) / 2f, (p0.y + p1.y) / 2f);
         float minDistance = Integer.MAX_VALUE;
         float currDistance = (float) distance(p0, p1);

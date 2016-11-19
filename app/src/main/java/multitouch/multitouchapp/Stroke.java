@@ -59,7 +59,7 @@ public abstract class Stroke {
     public abstract void move(float dx, float dy);
 
     // Translate, scale, or rotate the stroke by two control points.
-    public abstract void move(PointF p0, PointF p1);
+    public abstract void adjustColor(PointF p0, PointF p1, PointF p2);
     public abstract void startMove(float x, float y);
 
     protected double distance(PointF start, PointF end) {
