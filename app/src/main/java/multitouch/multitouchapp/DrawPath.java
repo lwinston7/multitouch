@@ -62,7 +62,7 @@ public class DrawPath extends Stroke {
     }
 
     @Override
-    protected boolean containsTap(float x, float y) {
+    public boolean containsTap(float x, float y) {
         return false;
     }
 

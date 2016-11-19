@@ -51,7 +51,7 @@ public abstract class Stroke {
     public abstract void finishStroke(float x, float y);
     public abstract Path getDrawPath();
 
-    protected abstract boolean containsTap(float x, float y);
+    public abstract boolean containsTap(float x, float y);
 
     public abstract float distanceFromTap(float x, float y);
 

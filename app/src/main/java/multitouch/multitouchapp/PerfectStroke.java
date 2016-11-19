@@ -50,7 +50,7 @@ public class PerfectStroke extends Stroke{
     }
 
     @Override
-    protected boolean containsTap(float x, float y) {
+    public boolean containsTap(float x, float y) {
         return mPerfectStroke.containsTap(x, y);
     }
 

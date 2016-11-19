@@ -12,6 +12,7 @@ import android.util.Log;
 public abstract class DrawShape extends Stroke {
     protected boolean mIsFilled = false;
     private final int MINIMUM_TRANSPARENCY = 20;
+    protected float mRotation = 0;
     protected int mTransparency = MINIMUM_TRANSPARENCY;
 
     public boolean getIsFilled() {
@@ -21,6 +22,15 @@ public abstract class DrawShape extends Stroke {
     public int getTransparency() {
         return mTransparency;
     }
+
+    public void setRotation(float rotation) {
+        mRotation = rotation;
+    }
+
+    public float getRotation() {
+        return mRotation;
+    }
+
 
     @Override
     public void move(PointF p0, PointF p1) {
@@ -47,7 +57,7 @@ public abstract class DrawShape extends Stroke {
     }
 
     @Override
-    protected boolean containsTap(float x, float y) {
+    public boolean containsTap(float x, float y) {
         Path drawPath = getDrawPath();
         RectF bounds = new RectF();
         drawPath.computeBounds(bounds, false);
