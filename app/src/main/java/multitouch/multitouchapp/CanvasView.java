@@ -146,15 +146,17 @@ public class CanvasView extends View{
 
         //TODO: Offset by mScrollX and mScrollY if needed.
         if (currentStroke != null && currentDrawMode != DrawMode.Erase) {
-            if (paintColor != selectionColor) {
-                drawPaint.setColor(selectionColor);
-            } else {
-                drawPaint.setColor(secondarySelectionColor);
+            if (currTouchMode != TouchMode.SingleFingerDraw) {
+                if (paintColor != selectionColor) {
+                    drawPaint.setColor(selectionColor);
+                } else {
+                    drawPaint.setColor(secondarySelectionColor);
+                }
+                drawPaint.setStrokeWidth(brushSize * 1.3f);
+                canvas.drawPath(currentStroke.getDrawPath(), drawPaint);
+                drawPaint.setColor(paintColor);
+                drawPaint.setStrokeWidth(brushSize);
             }
-            drawPaint.setStrokeWidth(brushSize * 1.3f);
-            canvas.drawPath(currentStroke.getDrawPath(), drawPaint);
-            drawPaint.setColor(paintColor);
-            drawPaint.setStrokeWidth(brushSize);
             // TODO: Highlight the currently selected or tapped stroke.
             if (currentStroke instanceof DrawShape && ((DrawShape) currentStroke).getRotation() > 0) {
                 canvas.save();
