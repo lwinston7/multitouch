@@ -338,7 +338,7 @@ public class CanvasView extends View{
                     }
                     prevScaleDist = currScaleDist;
                     if (currentStroke instanceof DrawShape) {
-                        ((DrawShape) currentStroke).setRotation(rotateDegree);
+                       // ((DrawShape) currentStroke).setRotation(rotateDegree);
                     }
 
                     invalidate();

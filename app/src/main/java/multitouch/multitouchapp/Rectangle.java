@@ -82,7 +82,11 @@ public class Rectangle extends DrawShape{
 
     @Override
     public Stroke clone() {
-        Rectangle r = new Rectangle(new RectF(left, top, rect.right, rect.bottom), left, top);
+        Rectangle r = new Rectangle();
+        r.startStroke(left, top);
+        r.update(left + rect.width(), top + rect.height());
+        r.startMove(rect.centerX(), rect.centerY());
+        r.move(moveX, moveY);
         r.set(mColor, mSize, mIsFilled, mTransparency);
         return r;
     }
