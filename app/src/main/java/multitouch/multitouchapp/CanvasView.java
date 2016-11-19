@@ -290,21 +290,8 @@ public class CanvasView extends View{
                     checkForTwoFingerLongPress(event);
                 }
                 if (currTouchMode == TouchMode.OneFingerWait) {
-                    if (event.getPointerCount() == 1) {
-                        if (currentStroke != null && !currentStroke.isStrayStroke()) {
-                            upTouch(x, y);
-                        }
+                    currTouchMode = TouchMode.Drag;
 
-                        currentStroke = popNearestStroke(x, y);
-                    }
-
-
-                    if (currentStroke != null) {
-                        currTouchMode = TouchMode.Drag;
-                        currentStroke.startMove(x, y);
-                    } else {
-                        currTouchMode = TouchMode.SingleFingerDraw;
-                    }
                 } else if (currTouchMode == TouchMode.SingleFingerDraw) {
                     if (currentStroke != null) {
                         moveTouch(x, y);
@@ -749,6 +736,20 @@ public class CanvasView extends View{
         public void onLongPress(MotionEvent e) {
             if (e.getPointerCount() == 1 && currTouchMode == TouchMode.SingleFingerDraw) {
                 currTouchMode = TouchMode.OneFingerWait;
+                if (e.getPointerCount() == 1) {
+                    if (currentStroke != null && !currentStroke.isStrayStroke()) {
+                        upTouch(e.getX(), e.getY());
+                    }
+
+                    currentStroke = popNearestStroke(e.getX(), e.getY());
+                    if (currentStroke != null) {
+                        currentStroke.startMove(e.getX(), e.getY());
+                    } else {
+                        currTouchMode = TouchMode.SingleFingerDraw;
+                    }
+                }
+
+                invalidate();
             }
         }
 
