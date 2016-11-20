@@ -445,6 +445,10 @@ public class CanvasView extends View{
                 if (currTouchMode == TouchMode.SingleFingerDraw || currTouchMode == TouchMode.Drag) {
                     upTouch(x, y);
                     invalidate();
+                } else {
+                    upTouch();
+                    currTouchMode = TouchMode.FinishedGesture;
+                    invalidate();
                 }
                 break;
             case MotionEvent.ACTION_POINTER_DOWN:
