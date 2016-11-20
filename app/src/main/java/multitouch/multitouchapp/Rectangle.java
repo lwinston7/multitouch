@@ -92,6 +92,11 @@ public class Rectangle extends DrawShape{
         return r;
     }
 
+    @Override
+    public void meteredShift(float x, float y) {
+
+    }
+
     public RectF getRect() {
         return rect;
     }

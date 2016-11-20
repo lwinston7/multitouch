@@ -165,4 +165,9 @@ public class DrawPath extends Stroke {
     public Stroke clone() {
         return new DrawPath(new Path(drawPath));
     }
+
+    @Override
+    public void meteredShift(float x, float y) {
+
+    }
 }

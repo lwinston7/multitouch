@@ -103,6 +103,7 @@ public class CanvasView extends View{
         PerfectionToggle,
         Cloning,
         RotateResize,
+        MiniShift,
         FinishedGesture //Don't allow anymore gestures until we remove all fingers from the screen.
     }
 
@@ -166,6 +167,8 @@ public class CanvasView extends View{
                 drawPaint.setColor(paintColor);
                 drawPaint.setStrokeWidth(brushSize);
             }
+            drawPaint.setColor(currentStroke.getColor());
+            drawPaint.setStrokeWidth(currentStroke.getSize());
             // TODO: Highlight the currently selected or tapped stroke.
             if (currentStroke instanceof DrawShape && ((DrawShape) currentStroke).getRotation() > 0) {
                 canvas.save();
@@ -259,12 +262,15 @@ public class CanvasView extends View{
             upPath(x, y);
         } else if (currentStroke != null){
             currentStroke.finishStroke(x, y);
-            drawCanvas.drawPath(currentStroke.getDrawPath(), drawPaint);
-            if (currentStroke instanceof PerfectStroke) {
-                strokes.add(((PerfectStroke) currentStroke).getPerfectStroke());
-            } else {
-                strokes.add(currentStroke);
-                currentStroke = null;
+            Path p = currentStroke.getDrawPath();
+            if (p != null) {
+                drawCanvas.drawPath(p, drawPaint);
+                if (currentStroke instanceof PerfectStroke) {
+                    strokes.add(((PerfectStroke) currentStroke).getPerfectStroke().clone());
+                } else {
+                    strokes.add(currentStroke);
+                    currentStroke = null;
+                }
             }
         }
     }
@@ -377,6 +383,11 @@ public class CanvasView extends View{
                     }
 
                     invalidate();
+                } else if (currTouchMode == TouchMode.MiniShift) {
+                    /*
+                    currentStroke.meteredShift(event.getX(event.getPointerCount() - 1), event.getY(event.getPointerCount() -1));
+                    invalidate();
+                    */
                 }
 
                 if (event.getPointerCount() == 4) {
@@ -398,7 +409,7 @@ public class CanvasView extends View{
                     currTouchMode = TouchMode.SingleFingerDraw;
                     currentStroke = null;
                 }
-                ((MainActivity)context).updateGestureText("Touch to draw. Double tap stroke to delete or hold with one or two fingers to modify.");
+                ((MainActivity)context).updateGestureText("Touch to draw. Double tap stroke to delete or hold with one or two fingers to modify. Swipe down with four fingers to clear entire canvas.");
                 tapClickCount++;
                 if (tapClickCount == 1) {
                     tapStartTime = System.currentTimeMillis();
@@ -501,6 +512,12 @@ public class CanvasView extends View{
                     PointF dragPoint = new PointF(event.getX(actionIndex), event.getY(actionIndex));
                     ((DrawShape)currentStroke).setDragPoint(dragPoint);
                     currTouchMode = TouchMode.Color;
+                } else if (currTouchMode == TouchMode.Color) {
+                    if (event.getPointerCount() == 4) {
+                        /*
+                        currTouchMode = TouchMode.MiniShift;
+                        currentStroke.startMeteredShift(event.getX(event.getPointerCount() - 1), event.getY(event.getPointerCount() - 1));*/
+                    }
                 }
                 break;
             case MotionEvent.ACTION_POINTER_UP:
@@ -567,6 +584,10 @@ public class CanvasView extends View{
     public void setColor(String newColor) {
         paintColor = Color.parseColor(newColor);
         drawPaint.setColor(paintColor);
+        if (currentStroke != null) {
+            currentStroke.setColor(paintColor);
+        }
+
         invalidate();
     }
 
@@ -576,6 +597,9 @@ public class CanvasView extends View{
                 newSize, getResources().getDisplayMetrics());
         brushSize=pixelAmount;
         drawPaint.setStrokeWidth(brushSize);
+        if (currentStroke != null) {
+            currentStroke.setSize(brushSize);
+        }
     }
 
     public void setLastBrushSize(float lastSize){
@@ -691,6 +715,8 @@ public class CanvasView extends View{
                 } else {
                     currTouchMode = TouchMode.PerfectionWait;
                     currentStroke = new PerfectStroke();
+                    currentStroke.setColor(paintColor);
+                    currentStroke.setSize(brushSize);
                     ((MainActivity)context).updateGestureText("Use another finger to draw a perfect stroke. Tap to toggle strokes.");
                 }
             }

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Path;
 import android.graphics.Point;
+import android.graphics.PointF;
 import android.util.AttributeSet;
 import android.util.Log;
 
@@ -77,5 +78,26 @@ public class Circle extends DrawShape {
         Circle c = new Circle(x, y, radius);
         c.set(mColor, mSize, mIsFilled, mTransparency);
         return c;
+    }
+
+    @Override
+    public void meteredShift(float pointX, float pointY) {
+        float deltaX = pointX - mLastMeteredShiftPoint.x;
+        float deltaY = pointY - mLastMeteredShiftPoint.y;
+        if (Math.abs(deltaX) >= Math.abs(deltaY)) {
+            if (deltaX > 0) {
+                x += 20;
+            } else {
+                x -= 20;
+            }
+        } else if (Math.abs(deltaY) > Math.abs(deltaX)) {
+            if (deltaY > 0) {
+                y += 20;
+            } else {
+                y-= 20;
+            }
+        }
+
+        mLastMeteredShiftPoint = new PointF(x, y);
     }
 }

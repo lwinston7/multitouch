@@ -114,4 +114,9 @@ public class PerfectStroke extends Stroke{
     public Stroke clone() {
         return new PerfectStroke();
     }
+
+    @Override
+    public void meteredShift(float x, float y) {
+
+    }
 }

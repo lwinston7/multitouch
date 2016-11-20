@@ -14,6 +14,7 @@ public abstract class Stroke {
     protected float mSize;
     protected PointF p0Past, p1Past;
     protected static final float TOLERANCE = 1;
+    protected PointF mLastMeteredShiftPoint;
 
     protected void set(int color, float size) {
         mColor = color;
@@ -68,5 +69,9 @@ public abstract class Stroke {
 
     public abstract boolean isStrayStroke();
     public abstract Stroke clone();
+    public abstract void meteredShift(float x, float y);
+    public void startMeteredShift(float x, float y) {
+        mLastMeteredShiftPoint = new PointF(x,y);
+    }
 
 }
