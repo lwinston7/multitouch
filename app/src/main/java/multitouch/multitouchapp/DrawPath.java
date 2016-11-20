@@ -97,47 +97,25 @@ public class DrawPath extends Stroke {
 
     @Override
     public void adjustColor(PointF p0, PointF p1, PointF p2) {
-        PointF midpoint = new PointF((p0.x + p1.x) / 2f, (p0.y + p1.y) / 2f);
-        float minDistance = Integer.MAX_VALUE;
-        float currDistance = (float) distance(p0, p1);
-        float pastDistance = (float) distance(this.p0Past, this.p1Past);
-        float deltaDistance = currDistance - pastDistance;
+        // TODO: Manage these points better.
+        PointF dragPoint = p0;
+        if (p1 != null && distance(p0Past, dragPoint) < distance(p0Past, p1)) {
+            dragPoint = p1;
+        }
 
-        // If delta distance is significant, move with p0. Otherwise, move with the midpoint.
-        //TODO: Increase distance.
-        //Use pm.getSegment() to manipulate the line.
-       /* if (Math.abs(deltaDistance) > MINIMUM_DELTA_FINGER_DISTANCE) {
-            // TODO: Add line manipulation here.
-            ArrayList<PointF> points = new ArrayList<PointF>();
-            int minPoint = 0;
-            PathMeasure pm = new PathMeasure(drawPath, false);
-            float len = 0;
-            int i = 0;
-            while (len < pm.getLength()) {
-                float[] coordinates = {0f, 0f};
-                pm.getPosTan(len, coordinates, null);
-                PointF pt = new PointF(coordinates[0], coordinates[1]);
-                float distance = (float) distance(midpoint, pt);
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    minPoint = i;
-                }
-                points.add(pt);
-                len += pm.getLength() * SUBDIVIDE_THRESHOLD;
-                i++;
-            }
-            points.remove(minPoint);
-            RectF r =  new RectF();
-            drawPath.computeBounds(r, false);
-            drawPath.addArc(r, 0, 90);
-            this.p0Past = p0;
-            this.p1Past = p1;
-            return;
-        }*/
+        if (p2 != null && distance(p0Past, dragPoint) < distance(p0Past, p2)) {
+            dragPoint = p2;
+        }
 
-        move((p0.x + p1.x) / 2, (p1.y + p0.y) / 2);
-        this.p0Past = p0;
-        this.p1Past = p1;
+        float dragDistance = (float) distance(dragPoint, this.p1Past);
+        float deltaDistance = p1Past.y - dragPoint.y;
+        if ((Math.abs(dragDistance) < LOCKED_DELTA_FINGER_DISTANCE) ||
+                (Math.abs(dragDistance) > MINIMUM_DELTA_FINGER_DISTANCE) ||
+                Math.abs(deltaDistance) > 10) {
+            mColor = (int) Math.min(Math.max(mColor + deltaDistance, mColor), 255);
+        }
+
+        p1Past = dragPoint;
     }
 
     @Override
@@ -166,8 +144,8 @@ public class DrawPath extends Stroke {
         return new DrawPath(new Path(drawPath));
     }
 
-    public void updateWithScale(float index) {
-        update(index * mX,index * mY);
+    @Override
+    public void meteredShift(float x, float y) {
 
     }
 }

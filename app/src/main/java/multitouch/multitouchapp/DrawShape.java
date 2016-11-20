@@ -11,7 +11,7 @@ import android.util.Log;
 
 public abstract class DrawShape extends Stroke {
     protected boolean mIsFilled = false;
-    private final int MINIMUM_TRANSPARENCY = 20;
+    private final int MINIMUM_TRANSPARENCY = 0;
     protected float mRotation = 0;
     protected int mTransparency = MINIMUM_TRANSPARENCY;
 
@@ -56,14 +56,7 @@ public abstract class DrawShape extends Stroke {
         p1Past = dragPoint;
     }
 
-    public void setColorAdjustmentPoints(PointF p0) {
-        // TODO: Move this to Stroke.
-        this.p0Past = p0;
-    }
 
-    public void setDragPoint(PointF p1) {
-        this.p1Past = p1;
-    }
 
     @Override
     public boolean containsTap(float x, float y) {
