@@ -11,6 +11,7 @@ import android.util.Log;
 
 public abstract class DrawShape extends Stroke {
     protected boolean mIsFilled = false;
+    protected boolean mIsPerfect = false;
     private final int MINIMUM_TRANSPARENCY = 0;
     protected float mRotation = 0;
     protected int mTransparency = MINIMUM_TRANSPARENCY;
@@ -101,10 +102,11 @@ public abstract class DrawShape extends Stroke {
         }
     }
 
-    protected void set(int color, float size, boolean isFilled, int transparency) {
+    protected void set(int color, float size, boolean isFilled, int transparency, boolean isPerfect) {
         super.set(color, size);
         this.mIsFilled = isFilled;
         this.mTransparency = transparency;
+        this.mIsPerfect = isPerfect;
     }
 
     public abstract void updateWithScale(float scaleIndex);

@@ -13,7 +13,10 @@ public class Rectangle extends DrawShape{
     private float left, top;
     private float moveX, moveY;
 
-    public Rectangle() {}
+    public Rectangle(boolean perfect) {
+        mIsPerfect = perfect;
+    }
+
     public Rectangle(RectF rect, float left, float top) {
         this.rect = rect;
         this.left = left;
@@ -83,12 +86,12 @@ public class Rectangle extends DrawShape{
 
     @Override
     public Stroke clone() {
-        Rectangle r = new Rectangle();
+        Rectangle r = new Rectangle(mIsPerfect);
         r.startStroke(left, top);
         r.update(left + rect.width(), top + rect.height());
         r.startMove(rect.centerX(), rect.centerY());
         r.move(moveX, moveY);
-        r.set(mColor, mSize, mIsFilled, mTransparency);
+        r.set(mColor, mSize, mIsFilled, mTransparency, mIsPerfect);
         return r;
     }
 

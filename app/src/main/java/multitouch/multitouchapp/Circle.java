@@ -17,7 +17,9 @@ public class Circle extends DrawShape {
     private float x;
     private float y;
     private static final float TOLERANCE = 5;
-    public Circle() {}
+    public Circle(boolean perfect) {
+        mIsPerfect = perfect;
+    }
     public Circle(float x, float y, float radius) {
         this.x = x;
         this.y = y;
@@ -77,7 +79,7 @@ public class Circle extends DrawShape {
     @Override
     public Stroke clone() {
         Circle c = new Circle(x, y, radius);
-        c.set(mColor, mSize, mIsFilled, mTransparency);
+        c.set(mColor, mSize, mIsFilled, mTransparency, mIsPerfect);
         return c;
     }
 

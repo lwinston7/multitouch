@@ -68,11 +68,11 @@ public class PerfectStroke extends Stroke{
     public void newStroke() {
         if (currStrokeType == StrokeType.Line) {
             currStrokeType = StrokeType.Circle;
-            mPerfectStroke = new Circle();
+            mPerfectStroke = new Circle(true);
 
         } else if (currStrokeType == StrokeType.Circle) {
             currStrokeType = StrokeType.Rectangle;
-            mPerfectStroke = new Rectangle();
+            mPerfectStroke = new Rectangle(true);
 
         } else if (currStrokeType == StrokeType.Rectangle) {
             currStrokeType = StrokeType.Line;

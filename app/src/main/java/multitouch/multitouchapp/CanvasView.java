@@ -198,14 +198,14 @@ public class CanvasView extends View{
                 currentStroke.startStroke(x, y);
                 break;
             case Circle:
-                currentStroke = new Circle();
+                currentStroke = new Circle(false);
                 currentStroke.startStroke(x, y);
                 break;
             case Erase:
                 startPath(x, y);
                 break;
             case Rectangle:
-                currentStroke = new Rectangle();
+                currentStroke = new Rectangle(false);
                 currentStroke.startStroke(x, y);
                 break;
         }
