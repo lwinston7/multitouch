@@ -303,6 +303,7 @@ public class CanvasView extends View{
                 break;
             case MotionEvent.ACTION_MOVE:
                 if (currTouchMode == TouchMode.OneFingerWait) {
+                    ((MainActivity)context).updateGestureText("Move finger to drag shape. Tap outside to rotate or size. Tap inside to clone.");
                     currTouchMode = TouchMode.Drag;
                 }
 
@@ -384,6 +385,7 @@ public class CanvasView extends View{
                     currTouchMode = TouchMode.SingleFingerDraw;
                     currentStroke = null;
                 }
+                ((MainActivity)context).updateGestureText("Touch to draw. Double tap stroke to delete or hold with one or two fingers to modify.");
                 tapClickCount++;
                 if (tapClickCount == 1) {
                     tapStartTime = System.currentTimeMillis();
@@ -454,10 +456,10 @@ public class CanvasView extends View{
                     //currentStroke.distanceFromTap(tapPoint.x, tapPoint.y) <= MAXIMUM_DRAG_DISTANCE;
                     if (currentStroke.containsTap(tapPoint.x, tapPoint.y)) {
                         currTouchMode = TouchMode.Cloning;
-                        Log.d("resize", "cloning");
+                        ((MainActivity)context).updateGestureText("Drag finger to adjust position of cloned object.");
                     } else {
                         currTouchMode = TouchMode.RotateResize;
-                        Log.d("resize", "resize");
+                        ((MainActivity)context).updateGestureText("Use another finger to rotate or resize.");
                         prevSwipeY1 = event.getY(0);
                         prevSwipeY2 = event.getY(1);
                         prevScaleDist = spacingScale(event);
@@ -611,10 +613,12 @@ public class CanvasView extends View{
                     currentStroke = popNearestStroke(midpoint.x, midpoint.y);
                     currTouchMode = TouchMode.ColorWait;
                     ((DrawShape)currentStroke).setColorAdjustmentPoints(midpoint);
+                    ((MainActivity)context).updateGestureText("Use another finger to adjust color.");
                     invalidate();
                 } else {
                     currTouchMode = TouchMode.PerfectionWait;
                     currentStroke = new PerfectStroke();
+                    ((MainActivity)context).updateGestureText("Use another finger to draw a perfect stroke. Tap to toggle strokes.");
                 }
             }
         }

@@ -9,4 +9,5 @@
     <string name="med">Medium</string>
     <string name="lrg">Large</string>
     <string name="clear">Clear</string>
+    <string name="gestures">Touch to Draw</string>
 </resources>

@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
+import android.widget.TextView;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -21,6 +22,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ImageButton currPaint, drawBtn, eraseBtn;
     private float smallBrush, mediumBrush, largeBrush;
     private RadioButton btnLine, btnRect, btnCircle;
+    private TextView gestureDiscoverabilityArea;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         drawBtn.setOnClickListener(this);
 
         customCanvas.setBrushSize(mediumBrush);
+        gestureDiscoverabilityArea = (TextView) findViewById(R.id.gesture_discover);
 
         eraseBtn = (ImageButton)findViewById(R.id.buttonErase);
         eraseBtn.setOnClickListener(this);
@@ -70,6 +73,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
+    }
+
+    public void updateGestureText(String text) {
+        gestureDiscoverabilityArea.setText(text);
     }
 
     public void clearCanvas(View v) {
@@ -175,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         saveCanvasScreenshotBitmap(b);
     }
 
-    public static Bitmap getCanvasScreenshotBitmap(View view) {
+    public Bitmap getCanvasScreenshotBitmap(View view) {
         View screenView = view.getRootView();
         screenView.setDrawingCacheEnabled(true);
         Bitmap bitmap = Bitmap.createBitmap(screenView.getDrawingCache());
@@ -183,7 +190,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return bitmap;
     }
 
-    public static void saveCanvasScreenshotBitmap(Bitmap b) {
+    public void saveCanvasScreenshotBitmap(Bitmap b) {
         String path = Environment.getExternalStorageDirectory() + "/screenshot.png";
         File dir = new File(path);
         FileOutputStream outputStream;
