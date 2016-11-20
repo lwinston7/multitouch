@@ -165,4 +165,9 @@ public class DrawPath extends Stroke {
     public Stroke clone() {
         return new DrawPath(new Path(drawPath));
     }
+
+    public void updateWithScale(float index) {
+        update(index * mX,index * mY);
+
+    }
 }

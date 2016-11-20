@@ -25,4 +25,5 @@ public class Line extends DrawPath {
             drawPath.lineTo(x, y);
         }
     }
+
 }

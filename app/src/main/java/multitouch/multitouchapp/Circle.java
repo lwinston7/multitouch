@@ -78,4 +78,8 @@ public class Circle extends DrawShape {
         c.set(mColor, mSize, mIsFilled, mTransparency);
         return c;
     }
+
+    public void updateR(float newR) {
+        radius = newR;
+    }
 }
