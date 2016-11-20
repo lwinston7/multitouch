@@ -148,10 +148,10 @@ public class CanvasView extends View{
         super.onDraw(canvas);
 
         canvas.drawBitmap(canvasBitmap, mScrollX * -1, mScrollY * -1, canvasPaint);
-
         //TODO: Offset by mScrollX and mScrollY if needed.
         if (currentStroke != null && currentDrawMode != DrawMode.Erase) {
             if (currTouchMode != TouchMode.SingleFingerDraw) {
+                drawPaint.setStyle(Paint.Style.STROKE);
                 if (paintColor != selectionColor) {
                     drawPaint.setColor(selectionColor);
                 } else {
@@ -169,6 +169,12 @@ public class CanvasView extends View{
                 canvas.drawPath(currentStroke.getDrawPath(),drawPaint);
                 canvas.restore();
             } else {
+                if (currentStroke instanceof DrawShape && ((DrawShape) currentStroke).getIsFilled()) {
+                    drawPaint.setStyle(Paint.Style.STROKE);
+                    canvas.drawPath(currentStroke.getDrawPath(), drawPaint);
+                    drawPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+                    drawPaint.setAlpha(((DrawShape) currentStroke).getTransparency());
+                }
                 canvas.drawPath(currentStroke.getDrawPath(), drawPaint);
             }
         }
@@ -261,6 +267,13 @@ public class CanvasView extends View{
 
     private void upTouch() {
         if (currentStroke != null) {
+            if (currentStroke instanceof DrawShape && ((DrawShape) currentStroke).getIsFilled()) {
+                drawPaint.setStyle(Paint.Style.STROKE);
+                drawPaint.setAlpha(255);
+                drawCanvas.drawPath(currentStroke.getDrawPath(), drawPaint);
+                drawPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+                drawPaint.setAlpha(((DrawShape) currentStroke).getTransparency());
+            }
             drawCanvas.drawPath(currentStroke.getDrawPath(), drawPaint);
             if (currentStroke instanceof PerfectStroke) {
                 strokes.add(((PerfectStroke) currentStroke).getPerfectStroke());
@@ -291,9 +304,6 @@ public class CanvasView extends View{
                 invalidate();
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (currTouchMode == TouchMode.TwoFingerWait) {
-                    checkForTwoFingerLongPress(event);
-                }
                 if (currTouchMode == TouchMode.OneFingerWait) {
                     currTouchMode = TouchMode.Drag;
                 }
@@ -318,20 +328,19 @@ public class CanvasView extends View{
                     }
                     invalidate();
                 } else if (currTouchMode == TouchMode.Color) {
-                        Log.d("colorWait", "ajdusting color");
-                    if (event.getPointerCount() == 3) {
-                        PointF p0 = new PointF(event.getX(0), event.getY(0));
-                        PointF p1 = new PointF(event.getX(1), event.getY(1));
-                        PointF p2 = new PointF(event.getX(2), event.getY(2));
-                        //change here
-                        currentStroke.adjustColor(p0, p1, p2);
-                        if (currentStroke instanceof DrawShape && ((DrawShape) currentStroke).getIsFilled()) {
-                            drawPaint.setStyle(Paint.Style.FILL);
-                            drawPaint.setAlpha(((DrawShape) currentStroke).getTransparency());
-                        }
-
-                        invalidate();
+                    PointF p1 = null;
+                    PointF p2 = null;
+                    PointF p0 = new PointF(event.getX(0), event.getY(0));
+                    if (event.getPointerCount() > 1) {
+                        p1 = new PointF(event.getX(1), event.getY(1));
                     }
+
+                    if (event.getPointerCount() > 2) {
+                        p2 = new PointF(event.getX(2), event.getY(2));
+                    }
+
+                    currentStroke.adjustColor(p0, p1, p2);
+                    invalidate();
                 } else if (currTouchMode == TouchMode.Drag) {
                     if (currentStroke != null) {
                         currentStroke.move(x, y);
@@ -375,15 +384,8 @@ public class CanvasView extends View{
                     upTouch(x, y);
                     currTouchMode = TouchMode.SingleFingerDraw;
                 } else {
+                    upTouch();
                     currTouchMode = TouchMode.SingleFingerDraw;
-                    if (currentStroke != null) {
-                        drawCanvas.drawPath(currentStroke.getDrawPath(), drawPaint);
-                        if (currentStroke instanceof PerfectStroke) {
-                            strokes.add(((PerfectStroke) currentStroke).getPerfectStroke());
-                        } else {
-                            strokes.add(currentStroke);
-                        }
-                    }
                     currentStroke = null;
                 }
                 tapClickCount++;
@@ -424,10 +426,6 @@ public class CanvasView extends View{
                 break;
             case MotionEvent.ACTION_POINTER_DOWN:
                 // TODO: Check to see if other finger has been held for a long enough time.
-                if (currTouchMode == TouchMode.TwoFingerWait) {
-                    checkForTwoFingerLongPress(event);
-                }
-
                 if (currTouchMode == TouchMode.SingleFingerDraw) {
                     currTouchMode = TouchMode.TwoFingerWait;
                     mLastFingerDown = System.currentTimeMillis();
@@ -477,10 +475,9 @@ public class CanvasView extends View{
                     prevScaleDist = spacingScale(event);
                 } else if (currTouchMode == TouchMode.ColorWait) {
                     Log.d("colorWait", "draggin");
-                    PointF midpoint = new PointF((event.getX(0) + event.getX(0)) / 2f,
-                            (event.getY(1) + event.getY(1)) / 2f);
-                    PointF drag = new PointF(event.getX(2), event.getY(2));
-                    ((DrawShape)currentStroke).setColorAdjustmentPoints(midpoint, drag);
+                    int actionIndex = event.getActionIndex();
+                    PointF dragPoint = new PointF(event.getX(actionIndex), event.getY(actionIndex));
+                    ((DrawShape)currentStroke).setDragPoint(dragPoint);
                     currTouchMode = TouchMode.Color;
                 }
                 break;
@@ -622,6 +619,7 @@ public class CanvasView extends View{
                         strokes.get(pressedIndex).containsTap(midpoint.x, midpoint.y)) {
                     currentStroke = popNearestStroke(midpoint.x, midpoint.y);
                     currTouchMode = TouchMode.ColorWait;
+                    ((DrawShape)currentStroke).setColorAdjustmentPoints(midpoint);
                 } else {
                     currTouchMode = TouchMode.PerfectionWait;
                     currentStroke = null;
@@ -678,7 +676,7 @@ public class CanvasView extends View{
         drawPaint.setColor(str.getColor());
         drawPaint.setStrokeWidth(str.getSize());
         if (str instanceof DrawShape && ((DrawShape)str).getIsFilled()) {
-            drawPaint.setStyle(Paint.Style.FILL);
+            drawPaint.setStyle(Paint.Style.FILL_AND_STROKE);
             drawPaint.setAlpha(((DrawShape) str).getTransparency());
         }
         return str;
@@ -689,14 +687,14 @@ public class CanvasView extends View{
         for (Stroke str : strokes) {
             drawPaint.setColor(str.getColor());
             drawPaint.setStrokeWidth(str.getSize());
-            if (str instanceof DrawShape && ((DrawShape)str).getIsFilled()) {
-                drawPaint.setStyle(Paint.Style.FILL);
-                drawPaint.setAlpha(((DrawShape) str).getTransparency());
-            } else {
-                drawPaint.setStyle(Paint.Style.STROKE);
-                drawPaint.setAlpha(255);
-            }
+            drawPaint.setStyle(Paint.Style.STROKE);
+            drawPaint.setAlpha(255);
             drawStrokeOnCanvas(str);
+            if (str instanceof DrawShape && ((DrawShape)str).getIsFilled()) {
+                drawPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+                drawPaint.setAlpha(((DrawShape) str).getTransparency());
+                drawStrokeOnCanvas(str);
+            }
         }
 
         drawPaint.setColor(paintColor);
