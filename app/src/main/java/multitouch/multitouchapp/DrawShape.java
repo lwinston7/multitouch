@@ -77,7 +77,8 @@ public abstract class DrawShape extends Stroke {
         } else {
             Path drawPath = getDrawPath();
             RectF bounds = new RectF();
-            drawPath.computeBounds(bounds, false);
+            //TODO: Should be uncommented without breaking double-tap to erase.
+            //drawPath.computeBounds(bounds, false);
             double distance = Integer.MAX_VALUE;
             if (pt.x < bounds.left) {
                 if (pt.y > bounds.bottom) {
