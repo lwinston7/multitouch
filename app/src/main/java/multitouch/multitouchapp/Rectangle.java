@@ -1,5 +1,6 @@
 package multitouch.multitouchapp;
 
+import android.graphics.Matrix;
 import android.graphics.Path;
 import android.graphics.RectF;
 
@@ -99,6 +100,27 @@ public class Rectangle extends DrawShape{
         float right = left + w;
         float bottom = top + h;
         update(right, bottom);
+    }
+
+    public void updateWithRotation(float degrees, float px, float py) {
+        RectF rectF = new RectF(rect);
+        Matrix rotationMatrix = new Matrix();
+        rotationMatrix.postRotate(degrees, px, py);
+        float[] points = new float[4];
+        points[0] = rectF.left;
+        points[1] = rectF.top;
+        points[2] = rectF.right;
+        points[3] = rectF.bottom;
+        //rotationMatrix.mapRect(rectF);
+        rotationMatrix.mapPoints(points);
+        rect.set(points[0],points[1],points[2],points[3]);
+    }
+
+    public float getCenterX() {
+        return rect.centerX();
+    }
+    public float getCenterY() {
+        return rect.centerY();
     }
 
 }

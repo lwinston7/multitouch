@@ -48,6 +48,8 @@ public class CanvasView extends View{
     private static final float TOLERANCE = 5;
     private float prevScaleDist;
     private float currScaleDist;
+    private float prevRotateDegree;
+    private float currRotateDegree;
     private Stroke tappedStroke;
     private Stroke clonedStroke;
     private float prevSwipeY1, prevSwipeY2, prevSwipeY3, prevSwipeY4;
@@ -69,6 +71,8 @@ public class CanvasView extends View{
     private static final float SWIPE_TOLERANCE = 50;
 
     private Timer longPressTimer;
+
+    private boolean isRotated;
 
     private enum DrawMode {
         Line,
@@ -299,6 +303,7 @@ public class CanvasView extends View{
             case MotionEvent.ACTION_DOWN:
                 startTouch(x, y);
                 mActivePointer1Id = event.getPointerId(0);
+                isRotated = false;
                 invalidate();
                 break;
             case MotionEvent.ACTION_MOVE:
@@ -348,7 +353,6 @@ public class CanvasView extends View{
                     }
                 } else if (currTouchMode == TouchMode.RotateResize) {
                     currScaleDist = spacingScale(event);
-                    float rotateDegree = rotation(event);
                     float scaleIndex = currScaleDist / prevScaleDist;
                     if (currentStroke instanceof Circle) {
                         Log.d("resize", "circle scale: " + scaleIndex);
@@ -360,6 +364,15 @@ public class CanvasView extends View{
                     }
                     prevScaleDist = currScaleDist;
                     if (currentStroke instanceof DrawShape) {
+                        if (event.getPointerCount() == 3) {
+                            float rectcx = ((Rectangle)currentStroke).getCenterX();
+                            float rectcy = ((Rectangle)currentStroke).getCenterY();
+                            currRotateDegree = rotation(event);
+                            float rotateDegree = currRotateDegree - prevRotateDegree;
+                            //((Rectangle) currentStroke).updateWithRotation(rotateDegree,rectcx,rectcy);
+                            prevRotateDegree = currRotateDegree;
+                            invalidate();
+                        }
                        // ((DrawShape) currentStroke).setRotation(rotateDegree);
                     }
 
@@ -463,10 +476,26 @@ public class CanvasView extends View{
                         prevSwipeY1 = event.getY(0);
                         prevSwipeY2 = event.getY(1);
                         prevScaleDist = spacingScale(event);
+                        if (event.getPointerCount() == 3) {
+                            if (currentStroke instanceof Rectangle) {
+                                float rectcx = ((Rectangle) currentStroke).getCenterX();
+                                float rectcy = ((Rectangle) currentStroke).getCenterY();
+                                prevRotateDegree = rotation(event);
+                            }
+                        }
                     }
 
                 } else if (currTouchMode == TouchMode.RotateResize) {
+
                     prevScaleDist = spacingScale(event);
+                    if (event.getPointerCount() == 3) {
+                        //isRotated = false;
+                        if (currentStroke instanceof Rectangle) {
+                            float rectcx = ((Rectangle) currentStroke).getCenterX();
+                            float rectcy = ((Rectangle) currentStroke).getCenterY();
+                            prevRotateDegree = rotation(event);
+                        }
+                    }
                 } else if (currTouchMode == TouchMode.ColorWait) {
                     int actionIndex = event.getActionIndex();
                     PointF dragPoint = new PointF(event.getX(actionIndex), event.getY(actionIndex));
@@ -495,6 +524,32 @@ public class CanvasView extends View{
                 } else if (currTouchMode == TouchMode.ColorWait) {
                 } else if (currTouchMode == TouchMode.Color) {
                 } else if (currTouchMode == TouchMode.RotateResize) {
+                    //to do:
+                    //
+                    if (currentStroke != null && event.getPointerCount() == 2) {
+                        Log.d("Inside rota", "draw");
+                        drawCanvas.drawPath(currentStroke.getDrawPath(), drawPaint);
+                        invalidate();
+                    }
+                    if (event.getPointerCount() == 3) {
+                        float rectcx = ((Rectangle) currentStroke).getCenterX();
+                        float rectcy = ((Rectangle) currentStroke).getCenterY();
+                        currRotateDegree = rotation(event);
+                        if (!isRotated) {
+                            //Log.d("inside poinger up", "rotate!!!" + currRotateDegree );
+                            drawCanvas.save();
+                            drawCanvas.rotate(currRotateDegree, rectcx, rectcy);
+                            Stroke rotatedStroke = currentStroke;
+                            drawCanvas.drawPath(rotatedStroke.getDrawPath(), drawPaint);
+                            strokes.add(rotatedStroke);
+                            ((Rectangle) currentStroke).updateHeightWidth(0 , 0);
+                            currentStroke.setColor(bgColor);
+                            //strokes.remove(currentStroke);
+                            drawCanvas.restore();
+                            isRotated = true;
+                            invalidate();
+                        }
+                    }
                 } else {
                     currTouchMode = TouchMode.SingleFingerDraw;
                 }
@@ -575,12 +630,30 @@ public class CanvasView extends View{
     }
 
     //calculate the degree to be rotated by
+
     private float rotation(MotionEvent event) {
         if (event.getPointerCount() >= 2) {
             double delta_x = (event.getX(1) - event.getX(0));
             double delta_y = (event.getY(1) - event.getY(0));
             double radians = Math.atan2(delta_x, delta_y);
-            return (float) Math.toDegrees(radians);
+            float degree = (float) Math.toDegrees(radians);
+            //Log.d("radians",  " : " + radians);
+            //Log.d("degree",  " : " + degree);
+            return degree ;
+        }
+
+        return  0;
+    }
+
+    private float rotation(MotionEvent event, float centerX, float centerY) {
+        if (event.getPointerCount() >= 2) {
+            double delta_x = (event.getX(1) - centerX);
+            double delta_y = (event.getY(1) - centerY);
+            double radians = Math.atan2(delta_x, delta_y);
+            float degree = (float) Math.toDegrees(radians);
+            Log.d("radians",  " : " + radians);
+            Log.d("degree",  " : " + degree);
+            return degree ;
         }
 
         return  0;
@@ -752,7 +825,6 @@ public class CanvasView extends View{
                     if (currentStroke != null && !currentStroke.isStrayStroke()) {
                         upTouch(e.getX(), e.getY());
                     }
-
                     currentStroke = popNearestStroke(e.getX(), e.getY());
                     if (currentStroke != null) {
                         currentStroke.startMove(e.getX(), e.getY());
