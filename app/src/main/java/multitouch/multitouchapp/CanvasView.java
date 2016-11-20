@@ -266,7 +266,10 @@ public class CanvasView extends View{
             if (p != null) {
                 drawCanvas.drawPath(p, drawPaint);
                 if (currentStroke instanceof PerfectStroke) {
-                    strokes.add(((PerfectStroke) currentStroke).getPerfectStroke().clone());
+                    Stroke newStroke = ((PerfectStroke) currentStroke).getPerfectStroke();
+                    newStroke.setSize(brushSize);
+                    newStroke.setColor(paintColor);
+                    strokes.add(newStroke);
                 } else {
                     strokes.add(currentStroke);
                     currentStroke = null;
@@ -286,7 +289,10 @@ public class CanvasView extends View{
             }
             drawCanvas.drawPath(currentStroke.getDrawPath(), drawPaint);
             if (currentStroke instanceof PerfectStroke) {
-                strokes.add(((PerfectStroke) currentStroke).getPerfectStroke());
+                Stroke newStroke = ((PerfectStroke) currentStroke).getPerfectStroke();
+                newStroke.setSize(brushSize);
+                newStroke.setColor(paintColor);
+                strokes.add(newStroke);
             } else {
                 strokes.add(currentStroke);
                 currentStroke = null;
