@@ -11,7 +11,7 @@ import android.util.Log;
 
 public abstract class DrawShape extends Stroke {
     protected boolean mIsFilled = false;
-    private final int MINIMUM_TRANSPARENCY = 20;
+    private final int MINIMUM_TRANSPARENCY = 0;
     protected float mRotation = 0;
     protected int mTransparency = MINIMUM_TRANSPARENCY;
 
