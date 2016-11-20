@@ -1,6 +1,8 @@
 package multitouch.multitouchapp;
 
 import android.app.Dialog;
+import android.graphics.Bitmap;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -9,6 +11,9 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
+
+import java.io.File;
+import java.io.FileOutputStream;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
@@ -85,11 +90,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-
-    public void New(View view) {
-
-
-    }
 
     @Override
     public void onClick(View view) {
@@ -171,5 +171,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void Save(View view) {
         // Save file
+        Bitmap b = getCanvasScreenshotBitmap(customCanvas);
+        saveCanvasScreenshotBitmap(b);
+    }
+
+    public static Bitmap getCanvasScreenshotBitmap(View view) {
+        View screenView = view.getRootView();
+        screenView.setDrawingCacheEnabled(true);
+        Bitmap bitmap = Bitmap.createBitmap(screenView.getDrawingCache());
+        screenView.setDrawingCacheEnabled(false);
+        return bitmap;
+    }
+
+    public static void saveCanvasScreenshotBitmap(Bitmap b) {
+        String path = Environment.getExternalStorageDirectory() + "/screenshot.png";
+        File dir = new File(path);
+        FileOutputStream outputStream;
+        try {
+            dir.mkdirs();
+            dir.createNewFile();
+            outputStream = new FileOutputStream(dir);
+            b.compress(Bitmap.CompressFormat.PNG, 85, outputStream);
+            outputStream.flush();
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

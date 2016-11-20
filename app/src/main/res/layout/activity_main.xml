@@ -59,6 +59,7 @@
                         android:layout_alignStart="@+id/buttonNew"
                         android:layout_below="@+id/buttonErase"
                         android:contentDescription="@string/save"
+                        android:onClick="Save"
                         android:src="@drawable/save" />
 
                     <ImageButton
