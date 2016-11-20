@@ -484,6 +484,7 @@ public class CanvasView extends View{
                     }
 
                 } else if (currTouchMode == TouchMode.RotateResize) {
+
                     prevScaleDist = spacingScale(event);
                     if (event.getPointerCount() == 3) {
                         //isRotated = false;
@@ -492,7 +493,6 @@ public class CanvasView extends View{
                             float rectcy = ((Rectangle) currentStroke).getCenterY();
                             prevRotateDegree = rotation(event);
                         }
-
                     }
                 } else if (currTouchMode == TouchMode.ColorWait) {
                     int actionIndex = event.getActionIndex();
@@ -523,18 +523,26 @@ public class CanvasView extends View{
                 } else if (currTouchMode == TouchMode.Color) {
                 } else if (currTouchMode == TouchMode.RotateResize) {
                     //to do:
+                    //
+                    if (currentStroke != null && event.getPointerCount() == 2) {
+                        Log.d("Inside rota", "draw");
+                        drawCanvas.drawPath(currentStroke.getDrawPath(), drawPaint);
+                        invalidate();
+                    }
                     if (event.getPointerCount() == 3) {
                         float rectcx = ((Rectangle) currentStroke).getCenterX();
                         float rectcy = ((Rectangle) currentStroke).getCenterY();
                         currRotateDegree = rotation(event);
                         if (!isRotated) {
-                            Log.d("inside poinger up", "rotate!!!" + currRotateDegree );
+                            //Log.d("inside poinger up", "rotate!!!" + currRotateDegree );
                             drawCanvas.save();
                             drawCanvas.rotate(currRotateDegree, rectcx, rectcy);
                             Stroke rotatedStroke = currentStroke;
                             drawCanvas.drawPath(rotatedStroke.getDrawPath(), drawPaint);
                             strokes.add(rotatedStroke);
-                            strokes.remove(currentStroke);
+                            ((Rectangle) currentStroke).updateHeightWidth(0 , 0);
+                            currentStroke.setColor(bgColor);
+                            //strokes.remove(currentStroke);
                             drawCanvas.restore();
                             isRotated = true;
                             invalidate();
