@@ -15,6 +15,7 @@ import android.graphics.PointF;
 public class PerfectStroke extends Stroke{
     private float TOLERANCE_RANGE = 10;
     private float mStartX, mStartY;
+    private float mDragX, mDragY;
     private Stroke mPerfectStroke;
     private Path mSecondPath;
     private enum StrokeType {
@@ -23,12 +24,14 @@ public class PerfectStroke extends Stroke{
         Rectangle
     }
 
+    public PerfectStroke() {
+        currStrokeType = StrokeType.Line;
+        mPerfectStroke = new Line();
+    }
     private StrokeType currStrokeType;
 
     @Override
     public void startStroke(float x, float y) {
-        currStrokeType = StrokeType.Line;
-        mPerfectStroke = new Line();
         mPerfectStroke.startStroke(x, y);
         mStartX = x;
         mStartY = y;
@@ -46,7 +49,11 @@ public class PerfectStroke extends Stroke{
 
     @Override
     public Path getDrawPath() {
-        return mPerfectStroke.getDrawPath();
+        if (mPerfectStroke != null) {
+            return mPerfectStroke.getDrawPath();
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -86,6 +93,11 @@ public class PerfectStroke extends Stroke{
     @Override
     public void adjustColor(PointF p0, PointF p1, PointF p2) {
         mPerfectStroke.adjustColor(p0, p1, p2);
+    }
+
+    public void setDragPoint(float x, float y) {
+        this.mDragX = x;
+        this.mDragY = y;
     }
 
     @Override

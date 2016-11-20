@@ -17,8 +17,12 @@ public class Line extends DrawPath {
 
     @Override
     public void update(float x, float y) {
-        drawPath.reset();
-        drawPath.moveTo(mStartX, mStartY);
-        drawPath.lineTo(x, y);
+        if (drawPath == null) {
+            startStroke(x ,y);
+        } else {
+            drawPath.reset();
+            drawPath.moveTo(mStartX, mStartY);
+            drawPath.lineTo(x, y);
+        }
     }
 }

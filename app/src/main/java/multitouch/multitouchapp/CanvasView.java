@@ -150,7 +150,7 @@ public class CanvasView extends View{
         canvas.drawBitmap(canvasBitmap, mScrollX * -1, mScrollY * -1, canvasPaint);
         //TODO: Offset by mScrollX and mScrollY if needed.
         if (currentStroke != null && currentDrawMode != DrawMode.Erase) {
-            if (currTouchMode != TouchMode.SingleFingerDraw) {
+            if (currTouchMode != TouchMode.SingleFingerDraw && currTouchMode != TouchMode.Perfection && currTouchMode != TouchMode.PerfectionToggle) {
                 drawPaint.setStyle(Paint.Style.STROKE);
                 if (paintColor != selectionColor) {
                     drawPaint.setColor(selectionColor);
@@ -298,8 +298,6 @@ public class CanvasView extends View{
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 startTouch(x, y);
-                final float x1 = event.getX();
-                final float y1 = event.getY();
                 mActivePointer1Id = event.getPointerId(0);
                 invalidate();
                 break;
@@ -314,7 +312,8 @@ public class CanvasView extends View{
                         invalidate();
                     }
                 } else if (currTouchMode == TouchMode.Perfection) {
-                    moveTouch(event.getX(event.getPointerCount() - 1), event.getY(event.getPointerCount() - 1));
+                    int actionIndex = event.getPointerCount() - 1;
+                    moveTouch(event.getX(actionIndex), event.getY(actionIndex));
                     invalidate();
                 } else if (currTouchMode == TouchMode.Cloning) {
                     if (!isCloned && currentStroke != null) {
@@ -380,9 +379,6 @@ public class CanvasView extends View{
             case MotionEvent.ACTION_UP:
                 if (currTouchMode == TouchMode.SingleFingerDraw) {
                     upTouch(x, y);
-                } else if (currTouchMode == TouchMode.PerfectionToggle) {
-                    upTouch(x, y);
-                    currTouchMode = TouchMode.SingleFingerDraw;
                 } else {
                     upTouch();
                     currTouchMode = TouchMode.SingleFingerDraw;
@@ -444,13 +440,10 @@ public class CanvasView extends View{
                     }, getLongPressTimeout());
                 } else if (currTouchMode == TouchMode.PerfectionWait) {
                     // Attempt to make perfect stroke
-                    currentStroke = new PerfectStroke();
-                    if (event.getPointerCount() >= 2) {
-                        currentStroke.startStroke((event.getX(0) + event.getX(1)) / 2f,
-                                (event.getY(0) + event.getY(1)) / 2f);
-                        currTouchMode = TouchMode.Perfection;
-                        invalidate();
-                    }
+                    ((PerfectStroke)currentStroke).setDragPoint(event.getX(2), event.getY(2));
+                    currentStroke.startStroke((event.getX(0) + event.getX(1)) / 2f,
+                            (event.getY(0) + event.getY(1)) / 2f);
+                    currTouchMode = TouchMode.Perfection;
                 } else if (currTouchMode == TouchMode.PerfectionToggle) {
                    ((PerfectStroke)currentStroke).newStroke();
                     currTouchMode = TouchMode.Perfection;
@@ -471,10 +464,8 @@ public class CanvasView extends View{
                     }
 
                 } else if (currTouchMode == TouchMode.RotateResize) {
-                    Log.d("resize", "re pointer");
                     prevScaleDist = spacingScale(event);
                 } else if (currTouchMode == TouchMode.ColorWait) {
-                    Log.d("colorWait", "draggin");
                     int actionIndex = event.getActionIndex();
                     PointF dragPoint = new PointF(event.getX(actionIndex), event.getY(actionIndex));
                     ((DrawShape)currentStroke).setDragPoint(dragPoint);
@@ -485,10 +476,10 @@ public class CanvasView extends View{
                 if (currTouchMode == TouchMode.Perfection) {
                     if (event.getActionIndex() == event.getPointerCount() -1) {
                         currTouchMode = TouchMode.PerfectionToggle;
-                        Log.d("perfectionUP", "up from perfection to PerfectionToggle");
                     }
                 } else if (currTouchMode == TouchMode.PerfectionToggle) {
-                    upTouch(x, y);
+                    upTouch();
+                    currentStroke = null;
                     currTouchMode = TouchMode.FinishedGesture;
                 } else if (currTouchMode == TouchMode.Cloning) {
                     if (clonedStroke != null) {
@@ -620,12 +611,11 @@ public class CanvasView extends View{
                     currentStroke = popNearestStroke(midpoint.x, midpoint.y);
                     currTouchMode = TouchMode.ColorWait;
                     ((DrawShape)currentStroke).setColorAdjustmentPoints(midpoint);
+                    invalidate();
                 } else {
                     currTouchMode = TouchMode.PerfectionWait;
-                    currentStroke = null;
+                    currentStroke = new PerfectStroke();
                 }
-
-                invalidate();
             }
         }
     }
@@ -773,8 +763,6 @@ public class CanvasView extends View{
 
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-            if (currTouchMode == TouchMode.PerfectionWait) {
-            }
             return false;
         }
     }
