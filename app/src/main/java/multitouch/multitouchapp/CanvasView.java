@@ -516,7 +516,7 @@ public class CanvasView extends View{
                 } else if (currTouchMode == TouchMode.ColorWait) {
                     int actionIndex = event.getActionIndex();
                     PointF dragPoint = new PointF(event.getX(actionIndex), event.getY(actionIndex));
-                    ((DrawShape)currentStroke).setDragPoint(dragPoint);
+                    currentStroke.setDragPoint(dragPoint);
                     currTouchMode = TouchMode.Color;
                 } else if (currTouchMode == TouchMode.Color) {
                     if (event.getPointerCount() == 4) {
@@ -715,7 +715,7 @@ public class CanvasView extends View{
                         strokes.get(pressedIndex).containsTap(midpoint.x, midpoint.y)) {
                     currentStroke = popNearestStroke(midpoint.x, midpoint.y);
                     currTouchMode = TouchMode.ColorWait;
-                    ((DrawShape)currentStroke).setColorAdjustmentPoints(midpoint);
+                    currentStroke.setColorAdjustmentPoints(midpoint);
                     ((MainActivity)context).updateGestureText("Use another finger to adjust color.");
                     invalidate();
                 } else {

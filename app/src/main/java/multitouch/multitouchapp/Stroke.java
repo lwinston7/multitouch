@@ -74,4 +74,11 @@ public abstract class Stroke {
         mLastMeteredShiftPoint = new PointF(x,y);
     }
 
+    public void setColorAdjustmentPoints(PointF p0) {
+        this.p0Past = p0;
+    }
+
+    public void setDragPoint(PointF p1) {
+        this.p1Past = p1;
+    }
 }
