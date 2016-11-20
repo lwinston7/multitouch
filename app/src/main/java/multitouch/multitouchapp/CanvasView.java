@@ -366,13 +366,8 @@ public class CanvasView extends View{
                 } else if (currTouchMode == TouchMode.RotateResize) {
                     currScaleDist = spacingScale(event);
                     float scaleIndex = currScaleDist / prevScaleDist;
-                    if (currentStroke instanceof Circle) {
-                        Log.d("resize", "circle scale: " + scaleIndex);
-                        ((Circle) currentStroke).updateWithScale(scaleIndex);
-                    } else if (currentStroke instanceof Rectangle) {
-                        float updatedH = ((Rectangle) currentStroke).getRect().height() * scaleIndex;
-                        float updatedW = ((Rectangle) currentStroke).getRect().width() * scaleIndex;
-                        ((Rectangle) currentStroke).updateHeightWidth(updatedH, updatedW);
+                    if (currentStroke instanceof DrawShape) {
+                        ((DrawShape) currentStroke).updateWithScale(scaleIndex);
                     }
                     prevScaleDist = currScaleDist;
                     if (currentStroke instanceof DrawShape) {
@@ -550,9 +545,8 @@ public class CanvasView extends View{
                     //to do:
                     //
                     if (currentStroke != null && event.getPointerCount() == 2) {
-                        Log.d("Inside rota", "draw");
-                        drawCanvas.drawPath(currentStroke.getDrawPath(), drawPaint);
-                        invalidate();
+                        upTouch();
+                        currTouchMode = TouchMode.FinishedGesture;
                     }
                     if (event.getPointerCount() == 3) {
                         float rectcx = ((Rectangle) currentStroke).getCenterX();

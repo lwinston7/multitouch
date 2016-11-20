@@ -57,7 +57,6 @@ public abstract class DrawShape extends Stroke {
     }
 
 
-
     @Override
     public boolean containsTap(float x, float y) {
         Path drawPath = getDrawPath();
@@ -89,7 +88,7 @@ public abstract class DrawShape extends Stroke {
             } else if (pt.x > bounds.right) {
                 if (pt.y > bounds.bottom) {
                     distance = distance(pt, new PointF(bounds.right, bounds.bottom));
-                } else if (pt.y < bounds.top){
+                } else if (pt.y < bounds.top) {
                     distance = distance(pt, new PointF(bounds.right, bounds.top));
                 } else {
                     distance = pt.x - bounds.right;
@@ -107,4 +106,6 @@ public abstract class DrawShape extends Stroke {
         this.mIsFilled = isFilled;
         this.mTransparency = transparency;
     }
+
+    public abstract void updateWithScale(float scaleIndex);
 }

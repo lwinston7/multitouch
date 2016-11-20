@@ -29,6 +29,7 @@ public class Circle extends DrawShape {
         radius = (float) Math.sqrt(Math.pow(this.x - x, 2) + Math.pow(this.y - y,2));
     }
 
+    @Override
     public void updateWithScale(float scaleIndex) {
         radius = radius * scaleIndex;
     }

@@ -81,4 +81,5 @@ public abstract class Stroke {
     public void setDragPoint(PointF p1) {
         this.p1Past = p1;
     }
+
 }

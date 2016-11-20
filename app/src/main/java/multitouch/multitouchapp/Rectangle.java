@@ -101,6 +101,15 @@ public class Rectangle extends DrawShape{
         return rect;
     }
 
+    @Override
+    public void updateWithScale(float scaleIndex) {
+        float h = rect.height() * scaleIndex;
+        float w = rect.width() * scaleIndex;
+        float right = left + w;
+        float bottom = top + h;
+        update(right, bottom);
+    }
+
     public void updateHeightWidth(float h, float w) {
         float right = left + w;
         float bottom = top + h;
