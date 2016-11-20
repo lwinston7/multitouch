@@ -705,26 +705,24 @@ public class CanvasView extends View{
 
     private void checkForTwoFingerLongPress(MotionEvent event) {
         if (currTouchMode == TouchMode.TwoFingerWait) {
-            if (System.currentTimeMillis() - mLastFingerDown >= getLongPressTimeout()) {
-                longPressTimer.cancel();
-                // TODO: Only work if you're not touching another stroke.
-                PointF midpoint = new PointF((event.getX(0) + event.getX(1)) / 2f,
-                        (event.getY() + event.getY()) / 2f);
-                int pressedIndex = findNearestStrokeIndex(midpoint.x, midpoint.y);
-                if (pressedIndex >= 0 &&
-                        strokes.get(pressedIndex).containsTap(midpoint.x, midpoint.y)) {
-                    currentStroke = popNearestStroke(midpoint.x, midpoint.y);
-                    currTouchMode = TouchMode.ColorWait;
-                    currentStroke.setColorAdjustmentPoints(midpoint);
-                    ((MainActivity)context).updateGestureText("Use another finger to adjust color.");
-                    invalidate();
-                } else {
-                    currTouchMode = TouchMode.PerfectionWait;
-                    currentStroke = new PerfectStroke();
-                    currentStroke.setColor(paintColor);
-                    currentStroke.setSize(brushSize);
-                    ((MainActivity)context).updateGestureText("Use another finger to draw a perfect stroke. Tap to toggle strokes.");
-                }
+            longPressTimer.cancel();
+            // TODO: Only work if you're not touching another stroke.
+            PointF midpoint = new PointF((event.getX(0) + event.getX(1)) / 2f,
+                    (event.getY() + event.getY()) / 2f);
+            int pressedIndex = findNearestStrokeIndex(midpoint.x, midpoint.y);
+            if (pressedIndex >= 0 &&
+                    strokes.get(pressedIndex).containsTap(midpoint.x, midpoint.y)) {
+                currentStroke = popNearestStroke(midpoint.x, midpoint.y);
+                currTouchMode = TouchMode.ColorWait;
+                currentStroke.setColorAdjustmentPoints(midpoint);
+                ((MainActivity) context).updateGestureText("Use another finger to adjust color.");
+                invalidate();
+            } else {
+                currTouchMode = TouchMode.PerfectionWait;
+                currentStroke = new PerfectStroke();
+                currentStroke.setColor(paintColor);
+                currentStroke.setSize(brushSize);
+                ((MainActivity) context).updateGestureText("Use another finger to draw a perfect stroke. Tap to toggle strokes.");
             }
         }
     }
