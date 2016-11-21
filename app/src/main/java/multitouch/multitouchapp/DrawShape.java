@@ -10,15 +10,8 @@ import android.util.Log;
  */
 
 public abstract class DrawShape extends Stroke {
-    protected boolean mIsFilled = false;
     protected boolean mIsPerfect = false;
     protected float mRotation = 0;
-
-    public boolean getIsFilled() {
-        return mIsFilled;
-    }
-
-
 
     public void setRotation(float rotation) {
         mRotation = rotation;

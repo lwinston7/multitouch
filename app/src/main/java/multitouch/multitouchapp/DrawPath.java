@@ -1,11 +1,15 @@
 package multitouch.multitouchapp;
 
 import android.annotation.TargetApi;
+import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Path;
 import android.graphics.PathMeasure;
 import android.graphics.PointF;
+import android.graphics.RectF;
 import android.util.Log;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 /**
@@ -19,10 +23,12 @@ public class DrawPath extends Stroke {
     protected Path drawPath;
     protected float mX;
     protected float mY;
+    protected float startingX, startingY;
     protected static final float TOLERANCE = 5;
     protected float moveX = 0;
     protected float moveY = 0;
     protected final float SUBDIVIDE_THRESHOLD = .01f;
+    protected int mOriginalColor;
     public DrawPath() {}
     public DrawPath(Path drawPath) {
         this.drawPath = drawPath;
@@ -36,6 +42,8 @@ public class DrawPath extends Stroke {
         paths.add(drawPath);
         mX = x;
         mY = y;
+        startingX = x;
+        startingY = y;
         mTransparency = 255;
     }
 
@@ -49,7 +57,6 @@ public class DrawPath extends Stroke {
             mX = x;
             mY = y;
         }
-
     }
 
     @Override
@@ -98,7 +105,6 @@ public class DrawPath extends Stroke {
 
     @Override
     public void adjustColor(PointF p0, PointF p1, PointF p2) {
-        // TODO: Manage these points better.
         PointF dragPoint = p0;
         if (p1 != null && distance(p0Past, dragPoint) < distance(p0Past, p1)) {
             dragPoint = p1;
@@ -113,7 +119,26 @@ public class DrawPath extends Stroke {
         if ((Math.abs(dragDistance) < LOCKED_DELTA_FINGER_DISTANCE) ||
                 (Math.abs(dragDistance) > MINIMUM_DELTA_FINGER_DISTANCE) ||
                 Math.abs(deltaDistance) > 10) {
-            mColor = (int) Math.min(Math.max(mColor + deltaDistance, mColor), 255);
+            mIsFilled = true;
+            mTransparency = (int) Math.min(Math.max(mTransparency + deltaDistance, MINIMUM_TRANSPARENCY), 255);
+            int red = 0;
+            int blue = 0;
+            int green = 0;
+            float scale = Math.abs(deltaDistance) / 4f;
+            Log.d("color", scale + "");
+            if (deltaDistance > 0) {
+                red = (int) (Color.red(mOriginalColor) * scale);
+                green = (int) (Color.green(mOriginalColor) * scale);
+                blue = (int) (Color.blue(mOriginalColor) * scale);
+                Log.d("color first", red + " " + green + " " + blue);
+            } else {
+                red = (int) ((255 - Color.red(mOriginalColor)) * scale) + Color.red(mOriginalColor);
+                green = (int) ((255 - Color.green(mOriginalColor)) * scale) + Color.green(mOriginalColor);
+                blue = (int) ((255 - Color.blue(mOriginalColor)) * scale) + Color.blue(mOriginalColor);
+                Log.d("color last", red + " " +green + " " + blue);
+            }
+
+            mColor = Color.rgb(red, green, blue);
         }
 
         p1Past = dragPoint;
@@ -140,6 +165,11 @@ public class DrawPath extends Stroke {
         }
     }
 
+    @Override
+    public void setDragPoint(PointF p0) {
+        super.setDragPoint(p0);
+        mOriginalColor = mColor;
+    }
     @Override
     public Stroke clone() {
         return new DrawPath(new Path(drawPath));

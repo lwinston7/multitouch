@@ -11,6 +11,7 @@ import android.graphics.RectF;
 
 public abstract class Stroke {
     protected int mColor;
+    protected boolean mIsFilled = false;
     protected float mSize;
     protected PointF p0Past, p1Past;
     protected static final float TOLERANCE = 1;
@@ -19,6 +20,10 @@ public abstract class Stroke {
 
     public int getTransparency() {
         return mTransparency;
+    }
+
+    public boolean getIsFilled() {
+        return mIsFilled;
     }
 
     public void setTransparency(int transparency) {

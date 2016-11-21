@@ -521,7 +521,7 @@ public class CanvasView extends View {
                     }
                 } else if (currTouchMode == TouchMode.TwoFingerUp) {
                     if (event.getPointerCount() >= 3) {
-                        int actionIndex = event.getActionIndex();
+                        int actionIndex = event.getPointerCount() -1;
                         PointF dragPoint = new PointF(event.getX(actionIndex), event.getY(actionIndex));
                         currentStroke.setDragPoint(dragPoint);
                         currTouchMode = TouchMode.TwoFingerReady;
@@ -715,7 +715,6 @@ public class CanvasView extends View {
     private void checkForTwoFingerLongPress(MotionEvent event) {
         if (currTouchMode == TouchMode.TwoFingerWait) {
             longPressTimer.cancel();
-            // TODO: Only work if you're not touching another stroke.
             PointF midpoint = new PointF((event.getX(0) + event.getX(1)) / 2f,
                     (event.getY() + event.getY()) / 2f);
             int pressedIndex = findNearestStrokeIndex(midpoint.x, midpoint.y);
@@ -783,7 +782,7 @@ public class CanvasView extends View {
         drawPaint.setStrokeWidth(str.getSize());
         if (str instanceof DrawShape && ((DrawShape) str).getIsFilled()) {
             drawPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-            drawPaint.setAlpha(((DrawShape) str).getTransparency());
+            drawPaint.setAlpha(str.getTransparency());
         }
         return str;
     }
