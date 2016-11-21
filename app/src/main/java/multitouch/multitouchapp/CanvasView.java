@@ -185,7 +185,7 @@ public class CanvasView extends View {
                     drawPaint.setStyle(Paint.Style.STROKE);
                     canvas.drawPath(currentStroke.getDrawPath(), drawPaint);
                     drawPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-                    drawPaint.setAlpha(((DrawShape) currentStroke).getTransparency());
+                    drawPaint.setAlpha(currentStroke.getTransparency());
                 }
                 canvas.drawPath(currentStroke.getDrawPath(), drawPaint);
             }
@@ -285,12 +285,13 @@ public class CanvasView extends View {
 
     private void upTouch() {
         if (currentStroke != null) {
+            Log.d("uptouch", "no parameters");
             if (currentStroke instanceof DrawShape && ((DrawShape) currentStroke).getIsFilled()) {
                 drawPaint.setStyle(Paint.Style.STROKE);
                 drawPaint.setAlpha(255);
                 drawCanvas.drawPath(currentStroke.getDrawPath(), drawPaint);
                 drawPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-                drawPaint.setAlpha(((DrawShape) currentStroke).getTransparency());
+                drawPaint.setAlpha(currentStroke.getTransparency());
             }
             drawCanvas.drawPath(currentStroke.getDrawPath(), drawPaint);
             if (currentStroke instanceof PerfectStroke) {
@@ -396,7 +397,8 @@ public class CanvasView extends View {
                     }
                 }
 
-                if (event.getPointerCount() == 4) {
+                if (event.getPointerCount() == 4 && currTouchMode != TouchMode.TwoFingerUp &&
+                        currTouchMode != TouchMode.TwoFingerReady) {
                     lastSwipeY1 = event.getY(0);
                     lastSwipeY2 = event.getY(1);
                     lastSwipeY3 = event.getY(2);
@@ -410,6 +412,11 @@ public class CanvasView extends View {
             case MotionEvent.ACTION_UP:
                 if (currTouchMode == TouchMode.SingleFingerDraw) {
                     upTouch(x, y);
+                } else if (currTouchMode == TouchMode.TwoFingerReady || currTouchMode == TouchMode.TwoFingerUp) {
+                    Log.d("uptouch", "action up from " + currTouchMode);
+                    upTouch();
+                    currTouchMode = TouchMode.SingleFingerDraw;
+                    currentStroke = null;
                 } else {
                     upTouch();
                     currTouchMode = TouchMode.SingleFingerDraw;
@@ -433,7 +440,7 @@ public class CanvasView extends View {
                     }
                 }
                 if (currGestureMode == GestureMode.Swipe) {
-                    Log.d("inside Swipe", " " + event.getPointerCount());
+                    Log.d("uptouch", "swiping");
                     lastSwipeY1 = event.getY(0);
                     if ((lastSwipeY1 > prevSwipeY1 + SWIPE_TOLERANCE) &&
                             (lastSwipeY2 > prevSwipeY2 + SWIPE_TOLERANCE)

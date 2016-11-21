@@ -36,6 +36,7 @@ public class DrawPath extends Stroke {
         paths.add(drawPath);
         mX = x;
         mY = y;
+        mTransparency = 255;
     }
 
     @Override
