@@ -11,6 +11,7 @@ import android.util.Log;
 
 public abstract class DrawShape extends Stroke {
     protected boolean mIsFilled = false;
+    protected boolean mIsPerfect = false;
     private final int MINIMUM_TRANSPARENCY = 0;
     protected float mRotation = 0;
     protected int mTransparency = MINIMUM_TRANSPARENCY;
@@ -57,7 +58,6 @@ public abstract class DrawShape extends Stroke {
     }
 
 
-
     @Override
     public boolean containsTap(float x, float y) {
         Path drawPath = getDrawPath();
@@ -77,6 +77,8 @@ public abstract class DrawShape extends Stroke {
         } else {
             Path drawPath = getDrawPath();
             RectF bounds = new RectF();
+            //TODO: Should be uncommented without breaking double-tap to erase.
+            //drawPath.computeBounds(bounds, false);
             double distance = Integer.MAX_VALUE;
             if (pt.x < bounds.left) {
                 if (pt.y > bounds.bottom) {
@@ -89,7 +91,7 @@ public abstract class DrawShape extends Stroke {
             } else if (pt.x > bounds.right) {
                 if (pt.y > bounds.bottom) {
                     distance = distance(pt, new PointF(bounds.right, bounds.bottom));
-                } else if (pt.y < bounds.top){
+                } else if (pt.y < bounds.top) {
                     distance = distance(pt, new PointF(bounds.right, bounds.top));
                 } else {
                     distance = pt.x - bounds.right;
@@ -102,9 +104,12 @@ public abstract class DrawShape extends Stroke {
         }
     }
 
-    protected void set(int color, float size, boolean isFilled, int transparency) {
+    protected void set(int color, float size, boolean isFilled, int transparency, boolean isPerfect) {
         super.set(color, size);
         this.mIsFilled = isFilled;
         this.mTransparency = transparency;
+        this.mIsPerfect = isPerfect;
     }
+
+    public abstract void updateWithScale(float scaleIndex);
 }

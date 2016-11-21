@@ -2,6 +2,7 @@ package multitouch.multitouchapp;
 
 import android.graphics.Matrix;
 import android.graphics.Path;
+import android.graphics.PointF;
 import android.graphics.RectF;
 
 /**
@@ -12,8 +13,12 @@ public class Rectangle extends DrawShape{
     private RectF rect;
     private float left, top;
     private float moveX, moveY;
+    private float width;
 
-    public Rectangle() {}
+    public Rectangle(boolean perfect) {
+        mIsPerfect = perfect;
+    }
+
     public Rectangle(RectF rect, float left, float top) {
         this.rect = rect;
         this.left = left;
@@ -25,25 +30,31 @@ public class Rectangle extends DrawShape{
         rect = new RectF(x,y,x,y);
         this.left = x;
         this.top = y;
+        width = 0;
     }
 
     @Override
     public void update(float right, float bottom) {
-        float actualLeft = left;
-        float actualTop = top;
-        float actualRight = right;
-        float actualBottom = bottom;
-        if (right < left) {
-            actualLeft = actualRight;
-            actualRight = left;
-        }
+        if (mIsPerfect) {
+            width = (float) distance(new PointF(right, bottom), new PointF(left, top));
+            rect.set(left - width /2f, top - width /2f, left + width / 2f, top + width /2f);
+        } else {
+            float actualLeft = left;
+            float actualTop = top;
+            float actualRight = right;
+            float actualBottom = bottom;
+            if (right < left) {
+                actualLeft = actualRight;
+                actualRight = left;
+            }
 
-        if (bottom < top) {
-            actualTop = actualBottom;
-            actualBottom = top;
-        }
+            if (bottom < top) {
+                actualTop = actualBottom;
+                actualBottom = top;
+            }
 
-        rect.set(actualLeft, actualTop, actualRight,actualBottom);
+            rect.set(actualLeft, actualTop, actualRight, actualBottom);
+        }
     }
 
     @Override
@@ -54,8 +65,12 @@ public class Rectangle extends DrawShape{
     @Override
     public Path getDrawPath() {
         Path drawPath = new Path();
-        drawPath.moveTo(rect.centerX(), rect.centerY());
-        drawPath.addRect(rect.left,rect.top,rect.right,rect.bottom, Path.Direction.CW);
+        if (mIsPerfect) {
+            drawPath.moveTo(left, top);
+        } else {
+            drawPath.moveTo(rect.centerX(), rect.centerY());
+        }
+        drawPath.addRect(rect, Path.Direction.CW);
         return drawPath;
     }
 
@@ -83,12 +98,12 @@ public class Rectangle extends DrawShape{
 
     @Override
     public Stroke clone() {
-        Rectangle r = new Rectangle();
+        Rectangle r = new Rectangle(mIsPerfect);
         r.startStroke(left, top);
         r.update(left + rect.width(), top + rect.height());
         r.startMove(rect.centerX(), rect.centerY());
         r.move(moveX, moveY);
-        r.set(mColor, mSize, mIsFilled, mTransparency);
+        r.set(mColor, mSize, mIsFilled, mTransparency, mIsPerfect);
         return r;
     }
 
@@ -99,6 +114,20 @@ public class Rectangle extends DrawShape{
 
     public RectF getRect() {
         return rect;
+    }
+
+    @Override
+    public void updateWithScale(float scaleIndex) {
+        if (mIsPerfect) {
+            width = width * scaleIndex;
+            rect.set(left - width /2f, top - width /2f, left + width / 2f, top + width /2f);
+        } else {
+            float h = rect.height() * scaleIndex;
+            float w = rect.width() * scaleIndex;
+            float right = left + w;
+            float bottom = top + h;
+            update(right, bottom);
+        }
     }
 
     public void updateHeightWidth(float h, float w) {
