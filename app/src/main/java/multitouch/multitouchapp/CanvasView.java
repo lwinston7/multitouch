@@ -833,19 +833,20 @@ public class CanvasView extends View{
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+            int pointerShiftScale = e2.getPointerCount() - 3;
             if ((currTouchMode == TouchMode.Color || currTouchMode == TouchMode.ColorWait)
-                    && e2.getPointerCount() == 4) {
+                    && e2.getPointerCount() >= 4) {
                 boolean isDistanceXGreater = Math.abs(distanceX) > Math.abs(distanceY);
                 if (distanceX > 0 && isDistanceXGreater) {
-                    currentStroke.shiftBy(-10, 0);
+                    currentStroke.shiftBy(-10 * pointerShiftScale, 0);
                 } else if (distanceX < 0 && isDistanceXGreater){
-                    currentStroke.shiftBy(10, 0);
+                    currentStroke.shiftBy(10 * pointerShiftScale, 0);
                 } else if (distanceY < 0) {
-                    currentStroke.shiftBy(0, 10);
+                    currentStroke.shiftBy(0, 10 * pointerShiftScale);
                 } else if (distanceY > 0){
-                    currentStroke.shiftBy(0, -10);
+                    currentStroke.shiftBy(0, -10 * pointerShiftScale);
                 }
-                // Clamp values between 0 -> width / height.
+
                 invalidate();
                 return true;
             } else {

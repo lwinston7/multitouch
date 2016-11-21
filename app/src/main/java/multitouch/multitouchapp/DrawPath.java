@@ -146,6 +146,6 @@ public class DrawPath extends Stroke {
 
     @Override
     public void shiftBy(float shiftXAmount, float shiftYAmount) {
-
+        drawPath.offset(shiftXAmount, shiftYAmount);
     }
 }

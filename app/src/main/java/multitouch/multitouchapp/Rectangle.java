@@ -109,7 +109,7 @@ public class Rectangle extends DrawShape{
 
     @Override
     public void shiftBy(float shiftXAmount, float shiftYAmount) {
-
+        rect.offset(shiftXAmount, shiftYAmount);
     }
 
     public RectF getRect() {
