@@ -154,7 +154,7 @@ public class CanvasView extends View{
 
         canvas.drawBitmap(canvasBitmap, mScrollX * -1, mScrollY * -1, canvasPaint);
         //TODO: Offset by mScrollX and mScrollY if needed.
-        if (currentStroke != null && currentDrawMode != DrawMode.Erase) {
+        if (currentStroke != null && currentDrawMode != DrawMode.Erase && currentStroke.getDrawPath() != null) {
             if (currTouchMode != TouchMode.SingleFingerDraw && currTouchMode != TouchMode.Perfection && currTouchMode != TouchMode.PerfectionToggle) {
                 drawPaint.setStyle(Paint.Style.STROKE);
                 if (paintColor != selectionColor) {
@@ -833,12 +833,20 @@ public class CanvasView extends View{
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            if (currTouchMode == TouchMode.TwoFingerWait
-                    && e2.getPointerCount() == 2) {
+            if ((currTouchMode == TouchMode.Color || currTouchMode == TouchMode.ColorWait)
+                    && e2.getPointerCount() == 4) {
+                boolean isDistanceXGreater = Math.abs(distanceX) > Math.abs(distanceY);
+                if (distanceX > 0 && isDistanceXGreater) {
+                    currentStroke.shiftBy(-10, 0);
+                } else if (distanceX < 0 && isDistanceXGreater){
+                    currentStroke.shiftBy(10, 0);
+                } else if (distanceY < 0) {
+                    currentStroke.shiftBy(0, 10);
+                } else if (distanceY > 0){
+                    currentStroke.shiftBy(0, -10);
+                }
                 // Clamp values between 0 -> width / height.
-              /*  mScrollX = Math.min(Math.max(mScrollX + distanceX, 0), width - getWidth());
-                mScrollY = Math.min(Math.max(mScrollY + distanceY, 0), height - getHeight());
-                invalidate();*/
+                invalidate();
                 return true;
             } else {
                 return false;
