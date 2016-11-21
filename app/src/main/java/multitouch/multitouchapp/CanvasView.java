@@ -107,7 +107,6 @@ public class CanvasView extends View {
         PerfectionToggle,
         Cloning,
         RotateResize,
-        MiniShift,
         FinishedGesture //Don't allow anymore gestures until we remove all fingers from the screen.
     }
 
@@ -116,7 +115,6 @@ public class CanvasView extends View {
 
     private enum GestureMode {
         Swipe,
-        DoubleTap;
     }
 
     private GestureMode currGestureMode = null;
@@ -285,7 +283,6 @@ public class CanvasView extends View {
 
     private void upTouch() {
         if (currentStroke != null) {
-            Log.d("uptouch", "no parameters");
             if (currentStroke instanceof DrawShape && ((DrawShape) currentStroke).getIsFilled()) {
                 drawPaint.setStyle(Paint.Style.STROKE);
                 drawPaint.setAlpha(255);
@@ -413,7 +410,6 @@ public class CanvasView extends View {
                 if (currTouchMode == TouchMode.SingleFingerDraw) {
                     upTouch(x, y);
                 } else if (currTouchMode == TouchMode.TwoFingerReady || currTouchMode == TouchMode.TwoFingerUp) {
-                    Log.d("uptouch", "action up from " + currTouchMode);
                     upTouch();
                     currTouchMode = TouchMode.SingleFingerDraw;
                     currentStroke = null;
@@ -440,7 +436,6 @@ public class CanvasView extends View {
                     }
                 }
                 if (currGestureMode == GestureMode.Swipe) {
-                    Log.d("uptouch", "swiping");
                     lastSwipeY1 = event.getY(0);
                     if ((lastSwipeY1 > prevSwipeY1 + SWIPE_TOLERANCE) &&
                             (lastSwipeY2 > prevSwipeY2 + SWIPE_TOLERANCE)
