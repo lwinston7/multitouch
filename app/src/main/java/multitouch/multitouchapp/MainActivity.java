@@ -1,12 +1,18 @@
 package multitouch.multitouchapp;
 
+import android.Manifest;
 import android.app.Dialog;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -18,6 +24,7 @@ import java.io.FileOutputStream;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
+    private final int EXTERNAL_STORAGE_PERMISSION = 3;
     private CanvasView customCanvas;
     private ImageButton currPaint, drawBtn, eraseBtn;
     private float smallBrush, mediumBrush, largeBrush;
@@ -185,24 +192,48 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public Bitmap getCanvasScreenshotBitmap(View view) {
         View screenView = view.getRootView();
         screenView.setDrawingCacheEnabled(true);
-        Bitmap bitmap = Bitmap.createBitmap(screenView.getDrawingCache());
+        CanvasView canvasView = (CanvasView)view;
+        Bitmap bitmap = Bitmap.createBitmap(canvasView.width, canvasView.height, Bitmap.Config.ARGB_8888);
         screenView.setDrawingCacheEnabled(false);
+        Bitmap canvasBitmap = ((CanvasView) view).getCanvasBitmap();
+        Canvas canvas = new Canvas(bitmap);
+        canvas.drawColor(Color.WHITE);
+        canvas.drawBitmap(canvasBitmap, 0, 0, canvasView.getCanvasPaint());
         return bitmap;
     }
 
     public void saveCanvasScreenshotBitmap(Bitmap b) {
-        String path = Environment.getExternalStorageDirectory() + "/screenshot.png";
-        File dir = new File(path);
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, EXTERNAL_STORAGE_PERMISSION
+            );
+        }
+
+        File directory = new File(Environment.getExternalStorageDirectory() + File.separator + "Screenshots");
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+        File file = new File(directory, System.currentTimeMillis() + ".jpg");
         FileOutputStream outputStream;
         try {
-            dir.mkdirs();
-            dir.createNewFile();
-            outputStream = new FileOutputStream(dir);
-            b.compress(Bitmap.CompressFormat.PNG, 85, outputStream);
+            file.createNewFile();
+            outputStream = new FileOutputStream(file);
+            b.compress(Bitmap.CompressFormat.JPEG, 85, outputStream);
             outputStream.flush();
             outputStream.close();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        if (requestCode == EXTERNAL_STORAGE_PERMISSION) {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            }
         }
     }
 }

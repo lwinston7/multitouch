@@ -65,7 +65,7 @@ public class CanvasView extends View {
 
     private int mLastTransparency = 0;
 
-    private int width, height;
+    public int width, height;
     private boolean isCloned;
     private int mActivePointer1Id = -10;
     private int tapClickCount;
@@ -901,10 +901,19 @@ public class CanvasView extends View {
         return Math.sqrt(Math.pow(x - mLastX, 2) + Math.pow(y - mLastY, 2));
     }
 
+
     private void resetPaint() {
         drawPaint.setColor(paintColor);
         drawPaint.setStrokeWidth(brushSize);
         drawPaint.setStyle((Paint.Style.STROKE));
         drawPaint.setAlpha(255);
+    }
+
+    public Paint getCanvasPaint() {
+        return  canvasPaint;
+    }
+
+    public Bitmap getCanvasBitmap() {
+        return canvasBitmap;
     }
 }
