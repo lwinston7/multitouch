@@ -8,10 +8,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -109,6 +107,7 @@ public class CanvasView extends View {
         TwoFingerUp, // Not scrolling. Scroll again when we put pointers back down.
         TwoFingerReady, // Ready for scrolling
         PerfectionToggle,
+        ColorWait,
         Cloning,
         RotateResize,
         FinishedGesture //Don't allow anymore gestures until we remove all fingers from the screen.
@@ -415,6 +414,7 @@ public class CanvasView extends View {
 
                         invalidate();
                     } else {
+                        currTouchMode = TouchMode.TwoFingerUp;
                         currentStroke.setTransparency(mLastTransparency);
                         invalidate();
                     }
@@ -545,18 +545,22 @@ public class CanvasView extends View {
                         //}
                         prevRotateDegree = rotation(event);
                     }
-                } else if (currTouchMode == TouchMode.TwoFingerUp) {
+                } else if (currTouchMode == TouchMode.TwoFingerUp || currTouchMode == TouchMode.ColorWait) {
+                    if (event.getPointerCount() == 3 && currTouchMode == TouchMode.ColorWait) {
+                        currTouchMode = TouchMode.TwoFingerReady;
+                    }
+
                     if (event.getPointerCount() >= 3) {
                         int actionIndex = event.getPointerCount() -1;
                         PointF dragPoint = new PointF(event.getX(actionIndex), event.getY(actionIndex));
                         currentStroke.setDragPoint(dragPoint);
-                        currTouchMode = TouchMode.TwoFingerReady;
                         mLastTransparency = currentStroke.getTransparency();
                         invalidate();
                     }
                 } else if (currTouchMode == TouchMode.TwoFingerReady) {
                     if (event.getPointerCount() > 3) {
                         currentStroke.setTransparency(mLastTransparency);
+                        currTouchMode = TouchMode.TwoFingerUp;
                         invalidate();
                     }
                 }
@@ -581,6 +585,7 @@ public class CanvasView extends View {
                     invalidate();
                 } else if (currTouchMode == TouchMode.TwoFingerUp) {
                 } else if (currTouchMode == TouchMode.TwoFingerReady) {
+                    currTouchMode = TouchMode.ColorWait;
                 } else if (currTouchMode == TouchMode.RotateResize) {
                     //to do:
                     //
@@ -766,7 +771,7 @@ public class CanvasView extends View {
             int pressedIndex = findNearestStrokeIndex(midpoint.x, midpoint.y);
             if (pressedIndex >= 0) {
                 currentStroke = popNearestStroke(midpoint.x, midpoint.y);
-                currTouchMode = TouchMode.TwoFingerUp;
+                currTouchMode = TouchMode.ColorWait;
                 currentStroke.setColorAdjustmentPoints(midpoint);
                 ((MainActivity) context).updateGestureText("Use another finger to adjust color.");
                 invalidate();
@@ -891,7 +896,7 @@ public class CanvasView extends View {
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
             int pointerShiftScale = e2.getPointerCount() - 3;
-            if ((currTouchMode == TouchMode.TwoFingerReady)
+            if ((currTouchMode == TouchMode.TwoFingerReady || currTouchMode == TouchMode.TwoFingerUp)
                     && e2.getPointerCount() >= 4) {
                 boolean isDistanceXGreater = Math.abs(distanceX) > Math.abs(distanceY);
                 if (distanceX > 0 && isDistanceXGreater) {
@@ -906,9 +911,6 @@ public class CanvasView extends View {
                 currTouchMode = TouchMode.TwoFingerUp;
                 currentStroke.setTransparency(mLastTransparency);
                 invalidate();
-                return true;
-            } else if (currTouchMode == TouchMode.TwoFingerReady && e2.getPointerCount() <= 3) {
-
                 return true;
             }
 
