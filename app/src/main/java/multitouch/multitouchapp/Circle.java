@@ -122,23 +122,13 @@ public class Circle extends DrawShape {
     }
 
     @Override
-    public void meteredShift(float pointX, float pointY) {
-        float deltaX = pointX - mLastMeteredShiftPoint.x;
-        float deltaY = pointY - mLastMeteredShiftPoint.y;
-        if (Math.abs(deltaX) >= Math.abs(deltaY)) {
-            if (deltaX > 0) {
-                x += 20;
-            } else {
-                x -= 20;
-            }
-        } else if (Math.abs(deltaY) > Math.abs(deltaX)) {
-            if (deltaY > 0) {
-                y += 20;
-            } else {
-                y-= 20;
-            }
+    public void shiftBy(float shiftXAmount, float shiftYAmount) {
+        if (mIsPerfect) {
+            x += shiftXAmount;
+            y += shiftYAmount;
+        } else {
+            ovalRect.offset(shiftXAmount, shiftYAmount);
         }
 
-        mLastMeteredShiftPoint = new PointF(x, y);
     }
 }

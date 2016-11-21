@@ -116,7 +116,7 @@ public class PerfectStroke extends Stroke{
     }
 
     @Override
-    public void meteredShift(float x, float y) {
+    public void shiftBy(float shiftXAmount, float shiftYAmount) {
 
     }
 }
