@@ -719,8 +719,7 @@ public class CanvasView extends View {
             PointF midpoint = new PointF((event.getX(0) + event.getX(1)) / 2f,
                     (event.getY() + event.getY()) / 2f);
             int pressedIndex = findNearestStrokeIndex(midpoint.x, midpoint.y);
-            if (pressedIndex >= 0 &&
-                    strokes.get(pressedIndex).containsTap(midpoint.x, midpoint.y)) {
+            if (pressedIndex >= 0) {
                 currentStroke = popNearestStroke(midpoint.x, midpoint.y);
                 currTouchMode = TouchMode.TwoFingerUp;
                 currentStroke.setColorAdjustmentPoints(midpoint);
