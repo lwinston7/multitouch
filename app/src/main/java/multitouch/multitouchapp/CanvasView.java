@@ -26,6 +26,8 @@ import java.util.TimerTask;
 
 import android.graphics.PointF;
 import android.util.Log;
+import android.view.animation.Animation;
+import android.view.animation.RotateAnimation;
 
 import static android.view.ViewConfiguration.getLongPressTimeout;
 
@@ -381,7 +383,17 @@ public class CanvasView extends View {
                                 float rotateDegree = currRotateDegree - prevRotateDegree;
                                 //((Rectangle) currentStroke).updateWithRotation(rotateDegree,rectcx,rectcy);
                                 prevRotateDegree = currRotateDegree;
-                                invalidate();
+                                drawCanvas.save();
+                                drawCanvas.rotate(currRotateDegree, rectcx, rectcy);
+                                Stroke rotatedStroke = currentStroke;
+                                //drawCanvas.drawPath(rotatedStroke.getDrawPath(), drawPaint);
+                                //strokes.add(rotatedStroke);
+                                //((Rectangle) currentStroke).updateHeightWidth(0 , 0);
+                                //currentStroke.setColor(bgColor);
+                                //strokes.remove(currentStroke);
+                                currentStroke = rotatedStroke;
+                                drawCanvas.restore();
+                                isRotated = true;
                             }
                         }
                         // ((DrawShape) currentStroke).setRotation(rotateDegree);
@@ -518,16 +530,6 @@ public class CanvasView extends View {
                                 float rectcx = ((Rectangle) currentStroke).getCenterX();
                                 float rectcy = ((Rectangle) currentStroke).getCenterY();
                                 prevRotateDegree = rotation(event);
-                                drawCanvas.rotate(currRotateDegree, rectcx, rectcy);
-                                Stroke rotatedStroke = currentStroke;
-                                //drawCanvas.drawPath(rotatedStroke.getDrawPath(), drawPaint);
-                                strokes.add(rotatedStroke);
-                                //((Rectangle) currentStroke).updateHeightWidth(0 , 0);
-                                //currentStroke.setColor(bgColor);
-                                strokes.remove(currentStroke);
-                                currentStroke = null;
-                                drawCanvas.restore();
-                                isRotated = true;
                             }
                         }
                     }
@@ -614,7 +616,7 @@ public class CanvasView extends View {
                                 //((Circle) currentStroke).updateR(0);
                                 //currentStroke.setColor(bgColor);
                                 strokes.remove(currentStroke);
-                                currentStroke = null;
+                                currentStroke = rotatedStroke;
                                 drawCanvas.restore();
                                 isRotated = true;
                             } else if (currentStroke instanceof DrawPath) {
@@ -959,4 +961,5 @@ public class CanvasView extends View {
     public Bitmap getCanvasBitmap() {
         return canvasBitmap;
     }
+
 }
