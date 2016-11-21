@@ -374,25 +374,30 @@ public class CanvasView extends View {
                     prevScaleDist = currScaleDist;
                     if (currentStroke instanceof DrawShape) {
                         if (event.getPointerCount() == 3) {
-                            if (currentStroke instanceof Rectangle) {
+                            //if (currentStroke instanceof Rectangle) {
                                 //  TO DO: multitouch.multitouchapp.Circle cannot be cast to multitouch.multitouchapp.Rectangle
-                                float rectcx = ((Rectangle) currentStroke).getCenterX();
-                                float rectcy = ((Rectangle) currentStroke).getCenterY();
-                                currRotateDegree = rotation(event);
-                                float rotateDegree = currRotateDegree - prevRotateDegree;
+                                //float rectcx = ((Rectangle) currentStroke).getCenterX();
+                                //float rectcy = ((Rectangle) currentStroke).getCenterY();
+                                //currRotateDegree = rotation(event);
+                                //float rotateDegree = currRotateDegree - prevRotateDegree;
                                 //((Rectangle) currentStroke).updateWithRotation(rotateDegree,rectcx,rectcy);
-                                prevRotateDegree = currRotateDegree;
-                                drawCanvas.save();
-                                drawCanvas.rotate(currRotateDegree, rectcx, rectcy);
-                                Stroke rotatedStroke = currentStroke;
+                                //prevRotateDegree = currRotateDegree;
+                                //drawCanvas.save();
+                                //drawCanvas.rotate(currRotateDegree, rectcx, rectcy);
+                                //Stroke rotatedStroke = currentStroke;
                                 //drawCanvas.drawPath(rotatedStroke.getDrawPath(), drawPaint);
                                 //strokes.add(rotatedStroke);
                                 //((Rectangle) currentStroke).updateHeightWidth(0 , 0);
                                 //currentStroke.setColor(bgColor);
                                 //strokes.remove(currentStroke);
-                                currentStroke = rotatedStroke;
-                                drawCanvas.restore();
-                                isRotated = true;
+                                //currentStroke = rotatedStroke;
+                                //drawCanvas.restore();
+                                //isRotated = true;
+                            //}
+                            if (currentStroke instanceof DrawPath) {
+                                ((DrawPath)currentStroke).updateWithRotation(currRotateDegree);
+                                invalidate();
+                                //isRotated = true;
                             }
                         }
                         // ((DrawShape) currentStroke).setRotation(rotateDegree);
@@ -535,7 +540,6 @@ public class CanvasView extends View {
                     }
 
                 } else if (currTouchMode == TouchMode.RotateResize) {
-
                     prevScaleDist = spacingScale(event);
                     if (event.getPointerCount() == 3) {
                         //isRotated = false;
@@ -596,43 +600,43 @@ public class CanvasView extends View {
                         //invalidate();
                         upTouch();
                         currTouchMode = TouchMode.FinishedGesture;
-                    }
-                    if (currentStroke != null && event.getPointerCount() == 3) {
+                    } else if (currentStroke != null && event.getPointerCount() == 3) {
                         if (!isRotated) {
                             currRotateDegree = rotation(event);
                             drawCanvas.save();
                             if (currentStroke instanceof Rectangle) {
                                 float rectcx = ((Rectangle) currentStroke).getCenterX();
                                 float rectcy = ((Rectangle) currentStroke).getCenterY();
-                                //Log.d("inside poinger up", "rotate!!!" + currRotateDegree );
                                 drawCanvas.rotate(currRotateDegree, rectcx, rectcy);
-                                Stroke rotatedStroke = currentStroke;
-                                drawCanvas.drawPath(rotatedStroke.getDrawPath(), drawPaint);
-                                strokes.add(rotatedStroke);
+                                Stroke rotatedStroke = currentStroke.clone();
+                                //strokes.add(rotatedStroke);
                                 ((Rectangle) currentStroke).updateHeightWidth(0 , 0);
-                                currentStroke.setColor(bgColor);
-                                strokes.remove(currentStroke);
+                                //currentStroke = null;
+                                //strokes.remove(currentStroke);
+                                drawCanvas.drawPath(rotatedStroke.getDrawPath(), drawPaint);
+                                //strokes.add(rotatedStroke);
+                                //currentStroke = null;
+                                //currentStroke = rotatedStroke;
                                 drawCanvas.restore();
                                 isRotated = true;
                             } else if (currentStroke instanceof Circle) {
                                 drawCanvas.rotate(currRotateDegree, event.getX(), event.getY());
-                                Stroke rotatedStroke = currentStroke;
-                                drawCanvas.drawPath(rotatedStroke.getDrawPath(), drawPaint);
-                                strokes.add(rotatedStroke);
+                                Stroke rotatedStroke = currentStroke.clone();
                                 //((Circle) currentStroke).updateR(0);
-                                //currentStroke.setColor(bgColor);
-                                strokes.remove(currentStroke);
-                                currentStroke = rotatedStroke;
+                                ((Circle) currentStroke).updateWithScale(0);
+                                drawCanvas.drawPath(rotatedStroke.getDrawPath(), drawPaint);
+                                //strokes.add(rotatedStroke);
+                                //strokes.remove(currentStroke);
+                                //currentStroke = null;
+                                //currentStroke = rotatedStroke;
                                 drawCanvas.restore();
                                 isRotated = true;
                             } else if (currentStroke instanceof DrawPath) {
                                 ((DrawPath)currentStroke).updateWithRotation(currRotateDegree);
                                 isRotated = true;
                             }
-                            invalidate();
                         }
                     }
-
                 } else {
                     currTouchMode = TouchMode.SingleFingerDraw;
                 }

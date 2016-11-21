@@ -131,4 +131,10 @@ public class Circle extends DrawShape {
         }
 
     }
+
+    public void updateR(float newR) {
+        radius = newR;
+
+    }
+
 }
