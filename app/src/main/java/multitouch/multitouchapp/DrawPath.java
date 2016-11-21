@@ -194,7 +194,11 @@ public class DrawPath extends Stroke {
 
     @Override
     public Stroke clone() {
-        return new DrawPath(new Path(drawPath));
+        DrawPath clonedPath = new DrawPath(new Path(drawPath));
+        //clonedPath.startMove();
+        clonedPath.move(moveX, moveY);
+        clonedPath.set(mColor, mSize);
+        return clonedPath;
     }
 
 
