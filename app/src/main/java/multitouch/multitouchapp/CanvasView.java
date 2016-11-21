@@ -584,6 +584,7 @@ public class CanvasView extends View {
                     }
                     invalidate();
                 } else if (currTouchMode == TouchMode.TwoFingerUp) {
+                } else if (currTouchMode == TouchMode.ColorWait) {
                 } else if (currTouchMode == TouchMode.TwoFingerReady) {
                     currTouchMode = TouchMode.ColorWait;
                 } else if (currTouchMode == TouchMode.RotateResize) {
