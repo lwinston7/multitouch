@@ -124,19 +124,19 @@ public class DrawPath extends Stroke {
             int red = 0;
             int blue = 0;
             int green = 0;
-            float scale = Math.abs(deltaDistance) / 4f;
-            Log.d("color", scale + "");
+            float scale = (255f - mTransparency) / 255f;
             if (deltaDistance > 0) {
                 red = (int) (Color.red(mOriginalColor) * scale);
                 green = (int) (Color.green(mOriginalColor) * scale);
                 blue = (int) (Color.blue(mOriginalColor) * scale);
-                Log.d("color first", red + " " + green + " " + blue);
             } else {
                 red = (int) ((255 - Color.red(mOriginalColor)) * scale) + Color.red(mOriginalColor);
                 green = (int) ((255 - Color.green(mOriginalColor)) * scale) + Color.green(mOriginalColor);
                 blue = (int) ((255 - Color.blue(mOriginalColor)) * scale) + Color.blue(mOriginalColor);
-                Log.d("color last", red + " " +green + " " + blue);
             }
+            red =Math.max(Math.min(red, 255),0);
+            blue =Math.max(Math.min(blue, 255),0);
+            green =Math.max(Math.min(green, 255),0);
 
             mColor = Color.rgb(red, green, blue);
         }
@@ -166,10 +166,11 @@ public class DrawPath extends Stroke {
     }
 
     @Override
-    public void setDragPoint(PointF p0) {
-        super.setDragPoint(p0);
+    public void setColorAdjustmentPoints(PointF p0) {
+        super.setColorAdjustmentPoints(p0);
         mOriginalColor = mColor;
     }
+
     @Override
     public Stroke clone() {
         return new DrawPath(new Path(drawPath));
