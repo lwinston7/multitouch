@@ -4,6 +4,8 @@ import android.graphics.Matrix;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.RectF;
+import android.view.animation.Animation;
+import android.view.animation.RotateAnimation;
 
 /**
  * Created by Lauren on 11/6/2016.
@@ -156,5 +158,16 @@ public class Rectangle extends DrawShape{
     public float getCenterY() {
         return rect.centerY();
     }
+
+    /*
+     public void animate(double fromDegrees, double toDegrees, long durationMillis) {
+        final RotateAnimation rotate = new RotateAnimation((float)fromDegrees,(float) toDegrees,
+                RotateAnimation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        rotate.setDuration(durationMillis);
+        rotate.setFillEnabled(true);
+        rotate.setFillAfter(true);
+        rect.startAnimation(rotate);
+    }
+     */
 
 }

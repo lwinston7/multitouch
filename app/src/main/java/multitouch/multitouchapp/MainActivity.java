@@ -22,6 +22,9 @@ import android.widget.TextView;
 import java.io.File;
 import java.io.FileOutputStream;
 
+import java.io.File;
+import java.io.FileOutputStream;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
     private final int EXTERNAL_STORAGE_PERMISSION = 3;
