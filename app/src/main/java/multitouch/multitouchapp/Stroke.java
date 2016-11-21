@@ -14,6 +14,16 @@ public abstract class Stroke {
     protected float mSize;
     protected PointF p0Past, p1Past;
     protected static final float TOLERANCE = 1;
+    protected final int MINIMUM_TRANSPARENCY = 0;
+    protected int mTransparency = MINIMUM_TRANSPARENCY;
+
+    public int getTransparency() {
+        return mTransparency;
+    }
+
+    public void setTransparency(int transparency) {
+        mTransparency = transparency;
+    }
 
     protected void set(int color, float size) {
         mColor = color;
