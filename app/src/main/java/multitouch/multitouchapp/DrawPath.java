@@ -1,9 +1,11 @@
 package multitouch.multitouchapp;
 
 import android.annotation.TargetApi;
+import android.graphics.Matrix;
 import android.graphics.Path;
 import android.graphics.PathMeasure;
 import android.graphics.PointF;
+import android.graphics.RectF;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -64,12 +66,33 @@ public class DrawPath extends Stroke {
 
     @Override
     public boolean containsTap(float x, float y) {
+        Log.d("containsTap", " :" + distanceFromTap2(x,y));
+        if (distanceFromTap2(x,y) <= 40) {
+            return true;
+        }
         return false;
+    }
+
+    public float distanceFromTap2(float x, float y) {
+        float minDistance = Integer.MAX_VALUE;
+        PointF midpoint = new PointF(x, y);
+        PathMeasure pm = new PathMeasure(drawPath, false);
+        float len = 0;
+        while (len < pm.getLength()) {
+            float[] coordinates = {0f, 0f};
+            pm.getPosTan(len, coordinates, null);
+            float distance = (float) distance(midpoint, new PointF(coordinates[0], coordinates[1]));
+            if (distance < minDistance) {
+                minDistance = distance;
+            }
+            len += pm.getLength() * SUBDIVIDE_THRESHOLD;
+        }
+        return minDistance;
     }
 
     @Override
     public float distanceFromTap(float x, float y) {
-        if (containsTap(x, y)) {
+        if (false) {
             return 0;
         } else {
             float minDistance = Integer.MAX_VALUE;
@@ -145,8 +168,21 @@ public class DrawPath extends Stroke {
         return new DrawPath(new Path(drawPath));
     }
 
+
+    public void updateWithScale(float index) {
+        update(index * mX,index * mY);
+    }
+
     @Override
     public void shiftBy(float shiftXAmount, float shiftYAmount) {
         drawPath.offset(shiftXAmount, shiftYAmount);
+    }
+
+    public void updateWithRotation(float degree) {
+        Matrix mMatrix = new Matrix();
+        RectF bounds = new RectF();
+        drawPath.computeBounds(bounds, true);
+        mMatrix.postRotate(degree, bounds.centerX(), bounds.centerY());
+        drawPath.transform(mMatrix);
     }
 }
